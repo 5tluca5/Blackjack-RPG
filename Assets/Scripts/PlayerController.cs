@@ -68,7 +68,7 @@ public class PlayerController : MonoBehaviour
     void HandleZoom()
     {
         float min = 2f;
-        float max = 3.5f;
+        float max = 3f;
         var cur = lookAtTarget.transform.localPosition;
 
         float zoom = cur.z + (zoomSpeed * Time.deltaTime * (mouseR ? 1 : -1));
