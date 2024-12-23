@@ -1,31 +1,60 @@
+using CardAttribute;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Deck : MonoBehaviour
+public class Deck 
 {
-    [Header("References")]
-    [SerializeField] GameObject cardPrefab;
-    [SerializeField, Range(1, 10)] int deckSize = 1;
+    List<Card> cardList = new();
+    public List<Card> GetCardList() => cardList;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public Deck()
     {
-        
+
     }
 
-    // Update is called once per frame
-    void Update()
+    public void InitDeck(int deckSize)
     {
-        
-    }
+        cardList.Clear();
 
-    [ContextMenu("InitDeck")]
-    public void InitDeck()
-    {
-        for (int i = 0; i < 52 * deckSize; i++)
+        int index = 0;
+
+        for (int i = 0; i <deckSize; i++)
         {
-
-            var cardGO = Instantiate(cardPrefab, transform);
-            cardGO.transform.localPosition = Vector3.zero - new Vector3 (0, 0, 0.005f * i);
+            for(CardSuit s = CardSuit.Spade; s <= CardSuit.Diamond; s++)
+            {
+                for (CardRank r = CardRank.Ace; r <= CardRank.King; r++)
+                {
+                    cardList.Add(new Card(index, s, r));
+                }
+            }
         }
+            
+    }
+
+    public void ShuffleDeck()
+    {
+        for (int i = 0; i < cardList.Count; i++)
+        {
+            int randomIndex = Random.Range(0, cardList.Count);
+
+            // Swap the current card with a random card
+            Card temp = cardList[i];
+            cardList[i] = cardList[randomIndex];
+            cardList[randomIndex] = temp;
+        }
+
+        // Update the index for each card based on the new order
+        for (int i = 0; i < cardList.Count; i++)
+        {
+            cardList[i].UpdateIndex(i);
+        }
+    }
+
+    public Card DrawCard()
+    {
+        var card = cardList[0];
+        cardList.RemoveAt(0);
+
+        return card;
     }
 }

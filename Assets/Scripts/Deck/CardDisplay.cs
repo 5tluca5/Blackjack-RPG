@@ -2,15 +2,25 @@ using UnityEngine;
 
 public class CardDisplay : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] MeshRenderer meshRenderer;
+
+    Card card;
+
+    private void Awake()
     {
-        
+        meshRenderer = GetComponent<MeshRenderer>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public Card GetCard() => card;
+
+    public void Setup(Card card)
     {
-        
+        this.card = card;
+        UpdateDisplay();
+    }
+
+    public void UpdateDisplay()
+    {
+        meshRenderer.materials[1] = CardMaterialProvider.GetSuitMat(card.suit, card.rank);
     }
 }

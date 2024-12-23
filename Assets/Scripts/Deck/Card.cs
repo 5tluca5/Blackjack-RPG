@@ -5,9 +5,9 @@ using CardAttribute;
 namespace CardAttribute
 {
     [Serializable]
-    public enum CardSuit
+    public enum CardSuit : int
     {
-        Spade,
+        Spade = 0,
         Heart,
         Club,
         Diamond
@@ -21,7 +21,7 @@ namespace CardAttribute
     }
 
     [Serializable]
-    public enum CardRank
+    public enum CardRank : int
     {
         Ace = 1,
         Two,
@@ -39,21 +39,21 @@ namespace CardAttribute
     }
 }
 
-[Serializable, CreateAssetMenu(fileName = "Card", menuName = "Scriptable Objects/Card")]
-public class Card : ScriptableObject
+[Serializable]
+public class Card
 {
     public int index { get; private set; }
-
-    [SerializeField] CardSuit suit;
-    [SerializeField] CardType type;
-    [SerializeField] CardRank rank;
+    public CardSuit suit { get; private set; }
+    public CardRank rank { get; private set; }
 
     public int GetRank() => (int)rank;  
 
-    public Card(CardSuit suit, CardRank rank)
+    public Card(int index, CardSuit suit, CardRank rank)
     {
+        this.index = index;
         this.suit = suit;
         this.rank = rank;
     }
-    
+
+    public void UpdateIndex(int i) => this.index = i;
 }
