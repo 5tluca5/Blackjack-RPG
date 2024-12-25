@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9119086619712795711}
   m_Layer: 0
   m_Name: Deck-Bottom
-  m_TagString: Untagged
+  m_TagString: Deck
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -99,9 +99,10 @@ GameObject:
   - component: {fileID: 8002463162837956412}
   - component: {fileID: 6569277299200053400}
   - component: {fileID: 1776465090306879990}
+  - component: {fileID: 4492492071813183880}
   m_Layer: 0
   m_Name: Deck
-  m_TagString: Untagged
+  m_TagString: Deck
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -162,6 +163,27 @@ MonoBehaviour:
   animator: {fileID: 6569277299200053400}
   deckTF: {fileID: 8002463162837956412}
   frontCard: {fileID: 6330705329114289147}
+--- !u!65 &4492492071813183880
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4644288332347595346}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.52, z: 0.28}
+  m_Center: {x: 0, y: 0, z: 0.14}
 --- !u!1 &7099123082389697488
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,7 +197,7 @@ GameObject:
   - component: {fileID: 4328916086730258004}
   m_Layer: 0
   m_Name: Deck-Mid
-  m_TagString: Untagged
+  m_TagString: Deck
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -263,7 +285,7 @@ GameObject:
   - component: {fileID: 6755522221619010073}
   m_Layer: 0
   m_Name: Deck-Top
-  m_TagString: Untagged
+  m_TagString: Deck
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

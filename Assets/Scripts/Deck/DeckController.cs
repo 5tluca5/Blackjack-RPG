@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using GamConstant;
+using System.Collections;
 
 public class DeckController : MonoBehaviour
 {
@@ -15,13 +17,16 @@ public class DeckController : MonoBehaviour
 
     Deck deck = new();
 
-    int playerCardCounter = 0;
+    Dictionary<Players, List<CardDisplay>> cardDict = new();
+    Dictionary<Players, List<Transform>> cardPosDict = new();
 
     public List<Card> GetCardList() => deck.GetCardList();
 
     public int GetRemainingCardSize() => GetCardList().Count;
 
     public int GetMaximumCardSize() => deckSize * 52;
+
+    public bool IsShuffling() => deckObject.IsShuffling();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -36,9 +41,12 @@ public class DeckController : MonoBehaviour
             deckObject.SetDeckSize((float)x / GetMaximumCardSize());
         }).AddTo(this);
 
-        
-        InitDeck();
-        ShuffleDeck();
+        cardPosDict = new Dictionary<Players, List<Transform>>
+        {
+            {Players.Dealer, dealerCardPositions},
+            {Players.Player1, playerCardPositions},
+        };
+
     }
 
     // Update is called once per frame
@@ -52,22 +60,48 @@ public class DeckController : MonoBehaviour
         deck.InitDeck(deckSize);
         deckObject.SetDeckOriginalHeight(deckSize);
 
-        playerCardCounter = 0;
+        cardDict = new Dictionary<Players, List<CardDisplay>> {
+            { Players.Dealer, new List<CardDisplay>()},
+            { Players.Player1, new List<CardDisplay>()},
+            { Players.Player2, new List<CardDisplay>()},
+            { Players.Player3, new List<CardDisplay>()},
+        };
     }
 
-    public void ShuffleDeck()
+    public void ShuffleDeck(float duration)
     {
         deck.ShuffleDeck();
-        deckObject.PlayShuffleAnimation(3f);
+        deckObject.PlayShuffleAnimation(duration * (1 / GameController.Instance.GameSpeed));
     }
 
-    public void DealCard()
+    public void DealCard(Players target)
     {
+        if (deckObject.IsShuffling()) return;
+
         var card = deck.DrawCard();
-        var refTF = playerCardPositions[Mathf.Min(playerCardPositions.Count-1, playerCardCounter)];
+        var refPos = cardPosDict[target];
+        var refTF = refPos[Mathf.Min(refPos.Count-1, cardDict[target].Count)];
 
-        deckObject.DealCard(card, refTF);
+        var cd = deckObject.DealCard(target, card, refTF);
+        cardDict[target].Add(cd);
 
-        playerCardCounter++;
+        if (target == Players.Dealer && cardDict[target].Count >= 2)
+        {
+            cd.FlipCard();
+        }
+    }
+
+    public IEnumerator InitialDealCard()
+    {
+        if (deckObject.IsShuffling() || !GameController.Instance.IsInitialDeal()) yield return null;
+
+        for(int i=0; i<2; i++)
+        {
+            for (Players p = Players.Dealer; p <= Players.Player1; p++)
+            {
+                DealCard(p);
+                yield return new WaitForSeconds(0.5f * (1 / GameController.Instance.GameSpeed));
+            }
+        }
     }
 }

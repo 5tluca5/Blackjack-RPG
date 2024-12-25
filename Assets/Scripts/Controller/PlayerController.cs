@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Maximum vertical angle")] public float maxPitch = 30f; 
     [Tooltip("Minimum horizontal angle")] public float minYaw = -45f;
     [Tooltip("Maximum horizontal angle")] public float maxYaw = 45f;
+    [Tooltip("Minimum Zoom distance")] public float minZoom = 2f;
+    [Tooltip("Maximum Zoom distance")] public float maxZoom = 3f;
 
     [Header("Input")]
     [SerializeField] float moveSpeed = 10f;
@@ -67,13 +69,11 @@ public class PlayerController : MonoBehaviour
 
     void HandleZoom()
     {
-        float min = 2f;
-        float max = 3f;
         var cur = lookAtTarget.transform.localPosition;
 
         float zoom = cur.z + (zoomSpeed * Time.deltaTime * (mouseR ? 1 : -1));
 
-        zoom = Mathf.Clamp(zoom, min, max);
+        zoom = Mathf.Clamp(zoom, minZoom, maxZoom);
         cur.z = zoom;
         lookAtTarget.localPosition = cur;
     }

@@ -25,13 +25,13 @@ public class DeckEditor : Editor
         // Add a button to shuffle the deck
         if (GUILayout.Button("Shuffle Deck"))
         {
-            deck.ShuffleDeck();
+            deck.ShuffleDeck(2);
         }
 
         // Deal a card to player
         if (GUILayout.Button("Deal Card"))
         {
-            deck.DealCard();
+            deck.DealCard(GamConstant.Players.Player1);
         }
 
         // Display the cards in the editor

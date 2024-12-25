@@ -1,10 +1,15 @@
+using UnityEditor.Localization.Plugins.XLIFF.V12;
 using UnityEngine;
 
 public class CameraRaycast : MonoBehaviour
 {
     public HUDController hudController;
+
     public Camera camera;  // Reference to the camera
     public float raycastRange = 100f;  // Maximum distance of the raycast
+
+    GameObject aimTarget;
+
 
     void Update()
     {
@@ -24,7 +29,7 @@ public class CameraRaycast : MonoBehaviour
             // Log the object that was hit
             Debug.Log("Hit object: " + hitInfo.collider.name);
 
-            hudController.SetAimTarget(hitInfo.collider.gameObject);
+            aimTarget = hitInfo.collider.gameObject;
 
             // Example: Draw a debug line in the editor for visualization
             Debug.DrawLine(ray.origin, hitInfo.point, Color.red);
@@ -34,8 +39,11 @@ public class CameraRaycast : MonoBehaviour
             // Debug: Show the ray even if it doesn't hit anything
             Debug.DrawLine(ray.origin, ray.origin + ray.direction * raycastRange, Color.green);
 
-            hudController.SetAimTarget(null);
-
+            aimTarget = null;
         }
+
+        hudController.SetAimTarget(aimTarget);
     }
+
+    public GameObject GetRaycastedObject() => aimTarget;
 }

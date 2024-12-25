@@ -1,8 +1,10 @@
 using UnityEngine;
 using DG.Tweening;
 using System.Collections.Generic;
+using UniRx;
+using GamConstant;
 
-public class DeckObject : MonoBehaviour
+public class DeckObject : MonoBehaviour, Interactable
 {
     [Header("References")]
     [SerializeField] Animator animator;
@@ -12,6 +14,7 @@ public class DeckObject : MonoBehaviour
 
     // Animation Keys
     protected const string ANI_KEY_ShuffleTime = "ShuffleTime";
+    protected const string ANI_KEY_gameSpeed = "GameSpeed";
 
     // Timer
     float shuffleTimer = 0f;
@@ -19,7 +22,8 @@ public class DeckObject : MonoBehaviour
     // Deck size factor
     float deckHeight = 1f;
 
-    
+    public bool IsShuffling() => shuffleTimer > 0;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -31,9 +35,12 @@ public class DeckObject : MonoBehaviour
     void Update()
     {
         if(shuffleTimer > 0)
+        {
             shuffleTimer = Mathf.Max(0, shuffleTimer - Time.deltaTime);
+            animator.SetFloat(ANI_KEY_ShuffleTime, shuffleTimer);
+        }
 
-        animator.SetFloat(ANI_KEY_ShuffleTime, shuffleTimer);
+        animator.SetFloat(ANI_KEY_gameSpeed, GameController.Instance.GameSpeed);
     }
 
     public void PlayShuffleAnimation(float shuffleTime)
@@ -61,17 +68,44 @@ public class DeckObject : MonoBehaviour
         deckTF.localScale = curScale;
     }
 
-    public void DealCard(/*Target target, */Card card, Transform refTF)
+    public CardDisplay DealCard(Players target, Card card, Transform refTF)
     {
-        var cd = Instantiate(frontCard, transform).GetComponent<CardDisplay>();
+        var c = Instantiate(frontCard, transform);
+        var cd = c.GetComponentInChildren<CardDisplay>();
+
         cd.Setup(card);
-
+        cd.SetTag("PlayerCard");
+        cd.OnCardRevealed().Subscribe(x =>
+        {
+            Debug.Log($"Player point: {card.rank}");
+        }).AddTo(this);
         //if(target == Target.Player)
-        cd.gameObject.tag = "PlayerCard";
+        //cd.gameObject.tag = "PlayerCard";
 
-        cd.transform.DOMove(refTF.position, 1f).SetEase(Ease.OutExpo);
-        cd.transform.DORotate(refTF.localRotation.eulerAngles, 1f);
+        c.transform.DOMove(refTF.position, 1f * (1 / GameController.Instance.GameSpeed)).SetEase(Ease.OutExpo);
+        c.transform.DORotate(refTF.localRotation.eulerAngles, 1f* (1 / GameController.Instance.GameSpeed)).SetEase(Ease.OutExpo);
 
         dealedCards.Add(cd);
+
+        return cd;
+    }
+
+    public bool IsInteractable()
+    {
+#if UNITY_EDITOR
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    public void Interact(KeyCode keyCode)
+    {
+        if (!IsInteractable()) return;
+
+        if (keyCode == KeyCode.E)
+        {
+            GameController.Instance.DealCard();
+        }
     }
 }

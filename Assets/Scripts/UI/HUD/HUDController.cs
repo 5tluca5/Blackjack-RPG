@@ -13,6 +13,7 @@ public class HUDController : MonoBehaviour
     [Header("Prompts")]
     [SerializeField] PromptGroup promptPlayerCard;
 
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -27,9 +28,10 @@ public class HUDController : MonoBehaviour
 
     public void SetAimTarget(GameObject go)
     {
-        if(go != null)
+        if(go != null && go.TryGetComponent(out Interactable interactable))
         {
-            if(go.CompareTag("PlayerCard"))
+            
+            if(go.CompareTag("PlayerCard") && interactable.IsInteractable())
             {
                 SwitchAimColor(true);
                 promptPlayerCard.Show();
@@ -49,6 +51,4 @@ public class HUDController : MonoBehaviour
     {
         aimDot.color = isInteractable ? aimColorInteractable : aimColorNormal;
     }
-
-
 }
