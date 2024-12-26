@@ -8,6 +8,8 @@ TagManager:
   - PlayerCard
   - HUDCanvas
   - Deck
+  - PlayerZone
+  - Dealer
   layers:
   - Default
   - TransparentFX

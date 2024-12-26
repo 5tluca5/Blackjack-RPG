@@ -1,3 +1,4 @@
+using UniRx;
 using UnityEngine;
 
 public class InputController : MonoBehaviour
@@ -18,6 +19,10 @@ public class InputController : MonoBehaviour
 
     void HandleInput()
     {
+        if(Input.GetKeyDown(KeyCode.F4))
+        {
+            gameController.StartNewTurn().ToObservable().Subscribe();
+        }
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
             gameController.ReceivedInput(KeyCode.Mouse0);
@@ -29,6 +34,22 @@ public class InputController : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.E))
         {
             gameController.ReceivedInput(KeyCode.E);
+        }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            gameController.ReceivedInput(KeyCode.Space);
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            gameController.ReceivedInput(KeyCode.D);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            gameController.ReceivedInput(KeyCode.S);
+        }
+        else if (Input.GetKeyDown(KeyCode.Q))
+        {
+            gameController.ReceivedInput(KeyCode.Q);
         }
     }
 }

@@ -1,6 +1,7 @@
 using GamConstant;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class ScoreboardItem : MonoBehaviour
 {
@@ -20,7 +21,9 @@ public class ScoreboardItem : MonoBehaviour
 
     public void SetPlayerPoint(int point)
     {
-        this.point = point;
-        pointText.text = point.ToString();
+        DOVirtual.Int(this.point, point, 0.5f, (x) => pointText.text = x.ToString()).SetEase(Ease.OutExpo);
+
+        //this.point = point;
+        //pointText.text = point.ToString();
     }
 }

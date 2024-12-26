@@ -15,6 +15,7 @@ public class HUDController : MonoBehaviour
 
     [Header("Prompts")]
     [SerializeField] PromptGroup promptPlayerCard;
+    [SerializeField] PromptGroup promptPlayerRegularAction;
 
     [Header("Scoreboard")]
     [SerializeField] Scoreboard scoreboard;
@@ -47,16 +48,18 @@ public class HUDController : MonoBehaviour
     {
         if(go != null && go.TryGetComponent(out Interactable interactable))
         {
-            
-            if(go.CompareTag("PlayerCard") && interactable.IsInteractable())
+            bool isInteractable = interactable.IsInteractable();
+
+            if (go.CompareTag("PlayerCard") && isInteractable)
             {
-                SwitchAimColor(true);
                 promptPlayerCard.Show();
             }
-            else
+            else if(go.CompareTag("Dealer") && isInteractable)
             {
-                SwitchAimColor(false);
+                promptPlayerRegularAction.Show();
             }
+
+            SwitchAimColor(isInteractable);
 
             return;
         }

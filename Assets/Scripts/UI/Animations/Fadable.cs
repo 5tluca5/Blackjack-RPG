@@ -11,7 +11,7 @@ public class Fadable : MonoBehaviour
         canvasGroup = GetComponent<CanvasGroup>();
     }
 
-    public virtual void Show(float endValue = 1f, float fadeInTime = 0.1f)
+    public virtual void Show(float endValue = 1f, float fadeInTime = 0.25f)
     {
         if (gameObject.activeSelf) return;
 
@@ -21,7 +21,7 @@ public class Fadable : MonoBehaviour
         canvasGroup.DOFade(endValue, fadeInTime);
     }
 
-    public virtual void Hide(float endValue = 0f, float fadeOutTime = 0.1f)
+    public virtual void Hide(float endValue = 0f, float fadeOutTime = 0.25f)
     {
         if (!gameObject.activeSelf) return;
 

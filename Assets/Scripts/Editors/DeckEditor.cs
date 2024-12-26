@@ -31,7 +31,7 @@ public class DeckEditor : Editor
         // Deal a card to player
         if (GUILayout.Button("Deal Card"))
         {
-            deck.DealCard(GamConstant.Players.Player1);
+            deck.DealCard(GamConstant.Players.Player1, 0);
         }
 
         // Display the cards in the editor

@@ -221,6 +221,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2926305668340505055}
   - component: {fileID: 6422547369656369528}
+  - component: {fileID: 2807578522812116082}
   m_Layer: 5
   m_Name: InputPrompt
   m_TagString: Untagged
@@ -267,7 +268,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 3
-  m_Spacing: 0
+  m_Spacing: 10
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 0
@@ -275,3 +276,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &2807578522812116082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4032107165987880926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e572cfc6957bcc546a4d0bacb2345a2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyCode: 0
+  promptIcon: {fileID: 7176588032089999997}
+  promptText: {fileID: 5174912720338911308}
+  onPressColor: {r: 0.31690812, g: 1, b: 0, a: 1}
+  onNormalColor: {r: 1, g: 1, b: 1, a: 1}

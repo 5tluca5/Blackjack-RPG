@@ -14,15 +14,21 @@ public class GameController : MonoBehaviour
     [SerializeField] HUDController hudController;
     [SerializeField] DeckController deckController;
     [SerializeField] CameraRaycast cameraRaycast;
+    [SerializeField] DealerObject dealer;
 
     [Header("Parameters")]
-    [SerializeField] GamePhase currentPhase;
+    [SerializeField] ReactiveProperty<GamePhase> currentPhase = new();
     [SerializeField] public float GameSpeed { get; private set; } = 1f;
 
     [Header("Game Data")]
     [SerializeField] Players currentPlayer = Players.Player1;
-    Dictionary<Players, List<Card>> playersCard = new();
-    Dictionary<Players, ReactiveProperty<int>> playersPoint = new();
+    [SerializeField] int currentCardSetIndex = 0;
+
+    Dictionary<Players, CardZone> playersCardZone = new();
+
+    //Raycast stuff
+    float raycastCooldown = 0f;
+
 
     private void Awake()
     {
@@ -39,25 +45,35 @@ public class GameController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        playersCard = new Dictionary<Players, List<Card>>
+        playersCardZone = new Dictionary<Players, CardZone>
         {
-            {Players.Dealer, new List<Card>()},
-            {Players.Player1, new List<Card>()},
+            {Players.Dealer, deckController.GetCardZone(Players.Dealer)},
+            {Players.Player1, deckController.GetCardZone(Players.Player1)},
         };
 
-        playersPoint = new Dictionary<Players, ReactiveProperty<int>>
+        currentPhase.Subscribe(x =>
         {
-            {Players.Dealer, new ReactiveProperty<int>(0)},
-            {Players.Player1, new ReactiveProperty<int>(0)},
-        };
-
-        foreach (var playerPoint in playersPoint)
-        {
-            playerPoint.Value.Subscribe(x =>
+            switch (x)
             {
-                hudController.UpdateScoreboardPoint(playerPoint.Key, x);
-            }).AddTo(this);
-        }
+                case GamePhase.InitialDeal:
+                    DisableRaycast();
+                    break;
+                case GamePhase.PlayerTurn:
+                    EnableRaycast();
+                    break;
+                case GamePhase.DealerTurn:
+                    DisableRaycast();
+                    break;
+                case GamePhase.SettlementPhase:
+                    DisableRaycast();
+                    break;
+                case GamePhase.NextRound:
+                    break;
+            }
+
+            Debug.Log("Current Phase: " + x);
+
+        }).AddTo(this);
 
         StartNewTurn().ToObservable().Subscribe();
     }
@@ -65,12 +81,18 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(raycastCooldown > 0)
+        {
+            raycastCooldown = Mathf.Max(0, raycastCooldown - Time.deltaTime);
 
+            if (raycastCooldown <= 0)
+                cameraRaycast.setRaycastEnable(true);
+        }
     }
 
     public IEnumerator StartNewTurn()
     {
-        currentPhase = GamePhase.InitialDeal;
+        currentPhase.Value = GamePhase.InitialDeal;
 
         ResetTurn();
 
@@ -84,16 +106,17 @@ public class GameController : MonoBehaviour
         deckController.InitialDealCard().ToObservable().Subscribe(x =>
         {
             Debug.Log("InitialDealCard completed");
-            currentPhase = GamePhase.PlayerTurn;
+            currentPhase.Value = GamePhase.PlayerTurn;
         }).AddTo(this);
 
         yield return null;
     }
 
-    public Players GetCurrentPlayer() => currentPlayer; 
-    public bool IsPlayerTurn() => currentPhase == GamePhase.PlayerTurn;
-    public bool IsInitialDeal() => currentPhase == GamePhase.InitialDeal;
-
+    public bool CanRaycast() => raycastCooldown <= 0f;
+    public Players GetCurrentPlayer() => currentPlayer;
+    public bool IsPlayerTurn() => currentPhase.Value == GamePhase.PlayerTurn;
+    public bool IsInitialDeal() => currentPhase.Value == GamePhase.InitialDeal;
+    public bool IsDealerInteractable() => IsPlayerTurn() && playersCardZone[currentPlayer].IsBothCardRevealed();
     public void ReceivedInput(KeyCode keyCode)
     {
         GameObject go = cameraRaycast.GetRaycastedObject();
@@ -104,14 +127,15 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void DealCard()
+    public void DealCard(Players player, int cardsetIndex)
     {
-        deckController.DealCard(Players.Player1);
+        deckController.DealCard(player, cardsetIndex);
     }
+    #region Player regular actions
 
     public void RevealCard(CardDisplay cardDisplay, RevealCardType type)
     {
-        if (cardDisplay.GetOwner() != Players.Dealer && currentPhase == GamePhase.PlayerTurn)
+        if (cardDisplay.GetOwner() != Players.Dealer && currentPhase.Value == GamePhase.PlayerTurn)
         {
             if (type == RevealCardType.Flip)
             {
@@ -124,37 +148,88 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void UpdatePlayerCard(Players player, Card card)
+    public void PlayerHit()
     {
-        playersCard[player].Add(card);
+        deckController.DealCard(currentPlayer, 0);
+        SetRaycastCooldown(1f);
+    }
 
-        int point = 0;
+    public void PlayerStand()
+    {
+        // Next phase
+        currentPhase.Value = GamePhase.DealerTurn;
 
-        foreach (var c in playersCard[player].OrderByDescending(x => x.rank).ToList())
+        var onCompleted = dealer.ExecuteDealerActionPhase();
+
+        if(onCompleted != null)
         {
-            var cPoint = c.rank >= CardRank.Ten ? 10 : (int)c.rank;
-
-            if (c.rank == CardRank.Ace && point + 11 <= 21)
+            onCompleted.Subscribe(_ =>
             {
-                cPoint = 11;
-            }
-
-            point += cPoint;
+                currentPhase.Value = GamePhase.SettlementPhase;
+            }).AddTo(this);
         }
+    }
 
-        playersPoint[player].Value = point;
+    public void PlayerSplit()
+    {
+
+    }
+
+    public void PlayerDoubleDown()
+    {
+
+    }
+
+    public void PlayerSurrender()
+    {
+
+    }
+
+    #endregion
+    public void UpdatePlayerCardSetPoint(Players player, int cardSetIndex)
+    {
+        if (playersCardZone.TryGetValue(player, out var cardZone))
+        {
+            cardZone.GetCardSet(cardSetIndex).CalculateRevealedCardPoint();
+        }
+    }
+
+    public void SubscribeCardSetPoint(CardSet cardset)
+    {
+        if (cardset != null)
+        {
+            cardset.SubscribeRevealedCardPoint().Subscribe(x =>
+            {
+                hudController.UpdateScoreboardPoint(cardset.GetOwner(), x);
+            }).AddTo(cardset);
+        }
     }
 
     void ResetTurn()
     {
-        foreach (var playerPoint in playersPoint)
+        foreach (var playerCardZone in playersCardZone)
         {
-            playerPoint.Value.Value = 0;
+            if(playerCardZone.Value != null)
+                playerCardZone.Value.ResetCardZone();
         }
+    }
 
-        foreach (var playerCard in playersCard)
-        {
-            playerCard.Value.Clear();
-        }
+    public void SetRaycastCooldown(float f)
+    {
+        raycastCooldown = f * (1 / GameSpeed);
+
+        if(f > 0)
+            cameraRaycast.setRaycastEnable(false);
+    }
+
+    public void DisableRaycast()
+    {
+        raycastCooldown = float.MaxValue;
+        cameraRaycast.setRaycastEnable(false);
+    }
+    public void EnableRaycast()
+    {
+        raycastCooldown = 0;
+        cameraRaycast.setRaycastEnable(true);
     }
 }

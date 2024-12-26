@@ -32,19 +32,8 @@ public class DeckController : MonoBehaviour
 
     public bool IsShuffling() => deckObject.IsShuffling();
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
-        if(deckObject == null)
-        {
-            deckObject = FindAnyObjectByType<DeckObject>();
-        }
-
-        GetCardList().ObserveEveryValueChanged(cards => cards.Count).Subscribe(x =>
-        {
-            deckObject.SetDeckSize((float)x / GetMaximumCardSize());
-        }).AddTo(this);
-
         cardPosDict = new Dictionary<Players, List<Transform>>
         {
             {Players.Dealer, dealerCardPositions},
@@ -58,11 +47,28 @@ public class DeckController : MonoBehaviour
         };
     }
 
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        if(deckObject == null)
+        {
+            deckObject = FindAnyObjectByType<DeckObject>();
+        }
+
+        GetCardList().ObserveEveryValueChanged(cards => cards.Count).Subscribe(x =>
+        {
+            deckObject.SetDeckSize((float)x / GetMaximumCardSize());
+        }).AddTo(this);
+
+    }
+
     // Update is called once per frame
     void Update()
     {
-        
+
     }
+
+    public CardZone GetCardZone(Players player) => cardZoneDict[player];
 
     public void InitDeck()
     {
@@ -83,7 +89,7 @@ public class DeckController : MonoBehaviour
         deckObject.PlayShuffleAnimation(duration * (1 / GameController.Instance.GameSpeed));
     }
 
-    public void DealCard(Players target)
+    public void DealCard(Players target, int cardSetIndex)
     {
         if (deckObject.IsShuffling()) return;
 
@@ -92,17 +98,23 @@ public class DeckController : MonoBehaviour
         var refTF = refPos[Mathf.Min(refPos.Count-1, cardDict[target].Count)];
 
         var cd = deckObject.DealCard(target, card, refTF);
+        var cs = cardZoneDict[target].AddCard(cd, cardSetIndex);
+
+        if(cs != null)
+        {
+            GameController.Instance.SubscribeCardSetPoint(cs);
+        }
 
         cd.OnCardRevealed().Subscribe(x =>
         {
-            GameController.Instance.UpdatePlayerCard(target, x);
+            GameController.Instance.UpdatePlayerCardSetPoint(target, cardSetIndex);
         }).AddTo(cd);
 
         cd.OnCardRevealCompleted().Subscribe(x =>
         {
             if (cardDict[target].Where(c => c.IsRevealed()).Count() >= 2)
             {
-                cardZoneDict[target].AddCards(cardDict[target]);
+                cardZoneDict[target].Rearrange();
             }
         }).AddTo(cd);
 
@@ -122,7 +134,7 @@ public class DeckController : MonoBehaviour
         {
             for (Players p = Players.Dealer; p <= Players.Player1; p++)
             {
-                DealCard(p);
+                DealCard(p, 0);
                 yield return new WaitForSeconds(0.5f * (1 / GameController.Instance.GameSpeed));
             }
         }

@@ -3,11 +3,12 @@ using UnityEngine;
 public class PromptGroup : Fadable
 {
     bool isShowing = false;
-    public override void Show(float endValue = 1, float fadeInTime = 0.1F)
+
+    public override void Show(float endValue = 1, float fadeInTime = 0.25f)
     {
         isShowing = true;
 
-        base.Show(endValue, fadeInTime);
+        base.Show(endValue, 0.25f);
     }
 
     private void Update()
