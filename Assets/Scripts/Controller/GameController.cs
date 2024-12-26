@@ -2,18 +2,27 @@ using GamConstant;
 using UnityEngine;
 using UniRx;
 using System.Collections;
+using System.Collections.Generic;
+using CardAttribute;
+using System.Linq;
 
 public class GameController : MonoBehaviour
 {
     public static GameController Instance { get; private set; }
 
     [Header("References")]
+    [SerializeField] HUDController hudController;
     [SerializeField] DeckController deckController;
     [SerializeField] CameraRaycast cameraRaycast;
 
     [Header("Parameters")]
     [SerializeField] GamePhase currentPhase;
     [SerializeField] public float GameSpeed { get; private set; } = 1f;
+
+    [Header("Game Data")]
+    [SerializeField] Players currentPlayer = Players.Player1;
+    Dictionary<Players, List<Card>> playersCard = new();
+    Dictionary<Players, ReactiveProperty<int>> playersPoint = new();
 
     private void Awake()
     {
@@ -30,6 +39,26 @@ public class GameController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        playersCard = new Dictionary<Players, List<Card>>
+        {
+            {Players.Dealer, new List<Card>()},
+            {Players.Player1, new List<Card>()},
+        };
+
+        playersPoint = new Dictionary<Players, ReactiveProperty<int>>
+        {
+            {Players.Dealer, new ReactiveProperty<int>(0)},
+            {Players.Player1, new ReactiveProperty<int>(0)},
+        };
+
+        foreach (var playerPoint in playersPoint)
+        {
+            playerPoint.Value.Subscribe(x =>
+            {
+                hudController.UpdateScoreboardPoint(playerPoint.Key, x);
+            }).AddTo(this);
+        }
+
         StartNewTurn().ToObservable().Subscribe();
     }
 
@@ -42,6 +71,8 @@ public class GameController : MonoBehaviour
     public IEnumerator StartNewTurn()
     {
         currentPhase = GamePhase.InitialDeal;
+
+        ResetTurn();
 
         deckController.InitDeck();
         deckController.ShuffleDeck(2f);
@@ -59,6 +90,7 @@ public class GameController : MonoBehaviour
         yield return null;
     }
 
+    public Players GetCurrentPlayer() => currentPlayer; 
     public bool IsPlayerTurn() => currentPhase == GamePhase.PlayerTurn;
     public bool IsInitialDeal() => currentPhase == GamePhase.InitialDeal;
 
@@ -79,7 +111,7 @@ public class GameController : MonoBehaviour
 
     public void RevealCard(CardDisplay cardDisplay, RevealCardType type)
     {
-        if (currentPhase == GamePhase.PlayerTurn)
+        if (cardDisplay.GetOwner() != Players.Dealer && currentPhase == GamePhase.PlayerTurn)
         {
             if (type == RevealCardType.Flip)
             {
@@ -92,4 +124,37 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public void UpdatePlayerCard(Players player, Card card)
+    {
+        playersCard[player].Add(card);
+
+        int point = 0;
+
+        foreach (var c in playersCard[player].OrderByDescending(x => x.rank).ToList())
+        {
+            var cPoint = c.rank >= CardRank.Ten ? 10 : (int)c.rank;
+
+            if (c.rank == CardRank.Ace && point + 11 <= 21)
+            {
+                cPoint = 11;
+            }
+
+            point += cPoint;
+        }
+
+        playersPoint[player].Value = point;
+    }
+
+    void ResetTurn()
+    {
+        foreach (var playerPoint in playersPoint)
+        {
+            playerPoint.Value.Value = 0;
+        }
+
+        foreach (var playerCard in playersCard)
+        {
+            playerCard.Value.Clear();
+        }
+    }
 }

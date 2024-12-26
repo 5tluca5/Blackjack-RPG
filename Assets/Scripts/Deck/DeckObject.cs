@@ -73,14 +73,12 @@ public class DeckObject : MonoBehaviour, Interactable
         var c = Instantiate(frontCard, transform);
         var cd = c.GetComponentInChildren<CardDisplay>();
 
-        cd.Setup(card);
-        cd.SetTag("PlayerCard");
-        cd.OnCardRevealed().Subscribe(x =>
+        cd.Setup(target, card);
+
+        if(GameController.Instance.GetCurrentPlayer() == target)
         {
-            Debug.Log($"Player point: {card.rank}");
-        }).AddTo(this);
-        //if(target == Target.Player)
-        //cd.gameObject.tag = "PlayerCard";
+            cd.SetTag("PlayerCard");
+        }
 
         c.transform.DOMove(refTF.position, 1f * (1 / GameController.Instance.GameSpeed)).SetEase(Ease.OutExpo);
         c.transform.DORotate(refTF.localRotation.eulerAngles, 1f* (1 / GameController.Instance.GameSpeed)).SetEase(Ease.OutExpo);
@@ -105,7 +103,7 @@ public class DeckObject : MonoBehaviour, Interactable
 
         if (keyCode == KeyCode.E)
         {
-            GameController.Instance.DealCard();
+            //GameController.Instance.DealCard();
         }
     }
 }

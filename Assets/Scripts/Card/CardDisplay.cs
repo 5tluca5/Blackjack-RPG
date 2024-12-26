@@ -1,6 +1,7 @@
 using UnityEngine;
 using UniRx;
 using GamConstant;
+using CardAttribute;
 
 public class CardDisplay : MonoBehaviour, Interactable
 {
@@ -12,9 +13,12 @@ public class CardDisplay : MonoBehaviour, Interactable
     protected const string ANI_KEY_gameSpeed = "GameSpeed";
 
     Card card;
+    Players owner;
 
+    bool isRevealing = false;
     bool isRevealed = false;
     Subject<Card> onRevealed = new Subject<Card>();
+    Subject<Card> onRevealCompleted = new Subject<Card>();
 
     private void Awake()
     {
@@ -28,14 +32,25 @@ public class CardDisplay : MonoBehaviour, Interactable
 
     public Card GetCard() => card;
 
+    public Players GetOwner() => owner;
     public bool IsRevealed() => isRevealed;
 
-    public void Setup(Card card)
+    public CardRank GetRank() => card.rank;
+
+    public void Setup(Players owner, Card card)
     {
         onRevealed?.Dispose();
         onRevealed = new Subject<Card>();
 
+        onRevealCompleted?.Dispose();
+        onRevealCompleted = new Subject<Card>();
+
+        this.owner = owner;
         this.card = card;
+
+        isRevealing = false;
+        isRevealed = false;
+
         UpdateDisplay();
     }
 
@@ -46,6 +61,7 @@ public class CardDisplay : MonoBehaviour, Interactable
     }
 
     public Subject<Card> OnCardRevealed() => onRevealed;
+    public Subject<Card> OnCardRevealCompleted() => onRevealCompleted;
 
     public void UpdateDisplay()
     {
@@ -71,8 +87,15 @@ public class CardDisplay : MonoBehaviour, Interactable
         onRevealed.OnNext(card);
     }
 
+    public void CardRevealCompleted()
+    {
+        isRevealed = true;
+        onRevealCompleted.OnNext(card);
+    }
+
     public void FlipCard()
     {
+        isRevealing = true;
         animator.SetTrigger(ANI_KEY_Flip);
     }
 
@@ -83,7 +106,7 @@ public class CardDisplay : MonoBehaviour, Interactable
 
     public bool IsInteractable()
     {
-        return GameController.Instance.IsPlayerTurn() && !isRevealed;
+        return GameController.Instance.IsPlayerTurn() && !isRevealed && !isRevealing;
     }
 
     public void Interact(KeyCode keyCode)

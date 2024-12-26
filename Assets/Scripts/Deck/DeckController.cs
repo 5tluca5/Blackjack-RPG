@@ -3,6 +3,7 @@ using UnityEngine;
 using UniRx;
 using GamConstant;
 using System.Collections;
+using System.Linq;
 
 public class DeckController : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class DeckController : MonoBehaviour
     [SerializeField] DeckObject deckObject;
     [SerializeField] List<Transform> dealerCardPositions;
     [SerializeField] List<Transform> playerCardPositions;
+    [SerializeField] CardZone dealerCardZone;
+    [SerializeField] CardZone playerCardZone;
 
     [Header("Parameters")]
     [SerializeField, Range(1, 10)] int deckSize = 1;
@@ -19,6 +22,7 @@ public class DeckController : MonoBehaviour
 
     Dictionary<Players, List<CardDisplay>> cardDict = new();
     Dictionary<Players, List<Transform>> cardPosDict = new();
+    Dictionary<Players, CardZone> cardZoneDict = new();
 
     public List<Card> GetCardList() => deck.GetCardList();
 
@@ -47,6 +51,11 @@ public class DeckController : MonoBehaviour
             {Players.Player1, playerCardPositions},
         };
 
+        cardZoneDict = new Dictionary<Players, CardZone>
+        {
+            {Players.Dealer, dealerCardZone},
+            {Players.Player1, playerCardZone},
+        };
     }
 
     // Update is called once per frame
@@ -83,6 +92,20 @@ public class DeckController : MonoBehaviour
         var refTF = refPos[Mathf.Min(refPos.Count-1, cardDict[target].Count)];
 
         var cd = deckObject.DealCard(target, card, refTF);
+
+        cd.OnCardRevealed().Subscribe(x =>
+        {
+            GameController.Instance.UpdatePlayerCard(target, x);
+        }).AddTo(cd);
+
+        cd.OnCardRevealCompleted().Subscribe(x =>
+        {
+            if (cardDict[target].Where(c => c.IsRevealed()).Count() >= 2)
+            {
+                cardZoneDict[target].AddCards(cardDict[target]);
+            }
+        }).AddTo(cd);
+
         cardDict[target].Add(cd);
 
         if (target == Players.Dealer && cardDict[target].Count >= 2)

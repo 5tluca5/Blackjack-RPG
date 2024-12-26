@@ -1,8 +1,11 @@
+using GamConstant;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HUDController : MonoBehaviour
 {
+    public static HUDController Instance { get; private set; }
+
     [Header("References")]
 
     [Header("Aim dot")]
@@ -13,7 +16,21 @@ public class HUDController : MonoBehaviour
     [Header("Prompts")]
     [SerializeField] PromptGroup promptPlayerCard;
 
-    
+    [Header("Scoreboard")]
+    [SerializeField] Scoreboard scoreboard;
+
+    private void Awake()
+    {
+        if(Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -50,5 +67,10 @@ public class HUDController : MonoBehaviour
     void SwitchAimColor(bool isInteractable)
     {
         aimDot.color = isInteractable ? aimColorInteractable : aimColorNormal;
+    }
+
+    public void UpdateScoreboardPoint(Players player, int point)
+    {
+        scoreboard.UpdatePoint(player, point);
     }
 }
