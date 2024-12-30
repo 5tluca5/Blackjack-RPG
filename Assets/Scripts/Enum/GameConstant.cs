@@ -20,7 +20,9 @@ namespace GamConstant
     [Serializable]
     public enum GamePhase
     {
-        InitialDeal,
+        ShuffleDeck,
+        PlayerBet,
+        DealingCards,
         PlayerTurn,
         DealerTurn,
         SettlementPhase,

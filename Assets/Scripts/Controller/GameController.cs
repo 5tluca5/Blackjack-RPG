@@ -22,10 +22,10 @@ public class GameController : MonoBehaviour
 
     [Header("Game Data")]
     [SerializeField] Players currentPlayer = Players.Player1;
-    [SerializeField] int currentCardSetIndex = 0;
-
     Dictionary<Players, CardZone> playersCardZone = new();
 
+    [Header("Debug")]
+    [SerializeField] public PlayerProfile PlayerProfile;
     //Raycast stuff
     float raycastCooldown = 0f;
 
@@ -39,7 +39,7 @@ public class GameController : MonoBehaviour
         else
         {
             Destroy(gameObject);
-        }
+        }   
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -55,9 +55,10 @@ public class GameController : MonoBehaviour
         {
             switch (x)
             {
-                case GamePhase.InitialDeal:
+                case GamePhase.ShuffleDeck:
                     DisableRaycast();
                     break;
+                case GamePhase.PlayerBet:
                 case GamePhase.PlayerTurn:
                     EnableRaycast();
                     break;
@@ -92,7 +93,7 @@ public class GameController : MonoBehaviour
 
     public IEnumerator StartNewTurn()
     {
-        currentPhase.Value = GamePhase.InitialDeal;
+        currentPhase.Value = GamePhase.ShuffleDeck;
 
         ResetTurn();
 
@@ -108,14 +109,14 @@ public class GameController : MonoBehaviour
             Debug.Log("InitialDealCard completed");
             currentPhase.Value = GamePhase.PlayerTurn;
         }).AddTo(this);
-
+        
         yield return null;
     }
 
     public bool CanRaycast() => raycastCooldown <= 0f;
     public Players GetCurrentPlayer() => currentPlayer;
     public bool IsPlayerTurn() => currentPhase.Value == GamePhase.PlayerTurn;
-    public bool IsInitialDeal() => currentPhase.Value == GamePhase.InitialDeal;
+    public bool IsInitialDeal() => currentPhase.Value == GamePhase.ShuffleDeck;
     public bool IsDealerInteractable() => IsPlayerTurn() && playersCardZone[currentPlayer].IsBothCardRevealed();
     public void ReceivedInput(KeyCode keyCode)
     {
@@ -204,6 +205,7 @@ public class GameController : MonoBehaviour
             }).AddTo(cardset);
         }
     }
+
 
     void ResetTurn()
     {
