@@ -34,4 +34,14 @@ namespace GamConstant
         Flip,
         Peak
     }
+
+    public enum ChipType : int
+    {
+        Chip_5 = 5,
+        Chip_25 = 25,
+        Chip_100 = 100,
+        Chip_500 = 500,
+        Chip_1000 = 1000,
+        Chip_5000 = 5000
+    }
 }

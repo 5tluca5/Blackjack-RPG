@@ -1,4 +1,6 @@
+using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem.XInput;
 
 [ExecuteAlways] // Runs in the editor for live updates
 public class CurvedHorizontalLayout3D : MonoBehaviour

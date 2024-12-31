@@ -10,10 +10,6 @@ public class DeckController : MonoBehaviour
     [Header("References")]
     [SerializeField] GameObject cardPrefab;
     [SerializeField] DeckObject deckObject;
-    [SerializeField] List<Transform> dealerCardPositions;
-    [SerializeField] List<Transform> playerCardPositions;
-    [SerializeField] CardZone dealerCardZone;
-    [SerializeField] CardZone playerCardZone;
 
     [Header("Parameters")]
     [SerializeField, Range(1, 10)] int deckSize = 1;
@@ -34,17 +30,7 @@ public class DeckController : MonoBehaviour
 
     private void Awake()
     {
-        cardPosDict = new Dictionary<Players, List<Transform>>
-        {
-            {Players.Dealer, dealerCardPositions},
-            {Players.Player1, playerCardPositions},
-        };
 
-        cardZoneDict = new Dictionary<Players, CardZone>
-        {
-            {Players.Dealer, dealerCardZone},
-            {Players.Player1, playerCardZone},
-        };
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -89,54 +75,27 @@ public class DeckController : MonoBehaviour
         deckObject.PlayShuffleAnimation(duration * (1 / GameController.Instance.GameSpeed));
     }
 
-    public void DealCard(Players target, int cardSetIndex)
+    public void DealCard(PlayerZone target)
     {
         if (deckObject.IsShuffling()) return;
 
         var card = deck.DrawCard();
-        var refPos = cardPosDict[target];
-        var refTF = refPos[Mathf.Min(refPos.Count-1, cardDict[target].Count)];
+        var refPos = target.GetCardPosRefs();
+        var cardSet = target.GetCurrentCardSet();
+        var refTF = refPos[Mathf.Min(refPos.Count-1, cardSet.GetCardDisplays().Count)];
 
-        var cd = deckObject.DealCard(target, card, refTF);
-        var cs = cardZoneDict[target].AddCard(cd, cardSetIndex);
+        var cd = deckObject.DealCard(target.Owner, card, refTF);
+        var cs = target.AddCard(cd);
 
         if(cs != null)
         {
             GameController.Instance.SubscribeCardSetPoint(cs);
         }
 
-        cd.OnCardRevealed().Subscribe(x =>
-        {
-            GameController.Instance.UpdatePlayerCardSetPoint(target, cardSetIndex);
-        }).AddTo(cd);
-
-        cd.OnCardRevealCompleted().Subscribe(x =>
-        {
-            if (cardDict[target].Where(c => c.IsRevealed()).Count() >= 2)
-            {
-                cardZoneDict[target].Rearrange();
-            }
-        }).AddTo(cd);
-
-        cardDict[target].Add(cd);
-
-        if (target == Players.Dealer && cardDict[target].Count >= 2)
+        if (target.Owner == Players.Dealer && cardSet.GetCardDisplays().Count >= 2)
         {
             cd.FlipCard();
         }
     }
 
-    public IEnumerator InitialDealCard()
-    {
-        if (deckObject.IsShuffling() || !GameController.Instance.IsInitialDeal()) yield return null;
-
-        for(int i=0; i<2; i++)
-        {
-            for (Players p = Players.Dealer; p <= Players.Player1; p++)
-            {
-                DealCard(p, 0);
-                yield return new WaitForSeconds(0.5f * (1 / GameController.Instance.GameSpeed));
-            }
-        }
-    }
 }

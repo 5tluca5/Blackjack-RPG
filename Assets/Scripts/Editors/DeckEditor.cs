@@ -28,12 +28,6 @@ public class DeckEditor : Editor
             deck.ShuffleDeck(2);
         }
 
-        // Deal a card to player
-        if (GUILayout.Button("Deal Card"))
-        {
-            deck.DealCard(GamConstant.Players.Player1, 0);
-        }
-
         // Display the cards in the editor
         if (cardList != null && cardList.Count > 0)
         {

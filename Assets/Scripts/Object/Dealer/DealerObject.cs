@@ -7,7 +7,7 @@ using UnityEngine;
 public class DealerObject : MonoBehaviour, Interactable
 {
     [Header("References")]
-    [SerializeField] CardZone cardZone;
+    [SerializeField] PlayerZone playerZone;
 
     bool executingDealerPhase = false;
     IDisposable dealerActionPhase = null;
@@ -59,7 +59,7 @@ public class DealerObject : MonoBehaviour, Interactable
         var onDealerActionPhaseCompleted = new Subject<bool>();
 
         executingDealerPhase = true;
-        var currentCardSet = cardZone.GetCurrentCardSet();
+        var currentCardSet = playerZone.GetCurrentCardSet();
 
         dealerActionPhase = currentCardSet.SubscribeRevealedCardPoint().Subscribe(x =>
         {
@@ -89,7 +89,7 @@ public class DealerObject : MonoBehaviour, Interactable
 
     IEnumerator DoDealerActionPhase()
     {
-        var currentCardSet = cardZone.GetCurrentCardSet();
+        var currentCardSet = playerZone.GetCurrentCardSet();
         var point = currentCardSet.SubscribeRevealedCardPoint().Value;
 
         while (point < 17)
@@ -114,12 +114,12 @@ public class DealerObject : MonoBehaviour, Interactable
     }
     void FlipSecondCard()
     {
-        var currentCardSet = cardZone.GetCurrentCardSet();
+        var currentCardSet = playerZone.GetCurrentCardSet();
         var cd = currentCardSet.FlipNextCard();
 
         if(cd == null)
         {
-            GameController.Instance.DealCard(Players.Dealer, currentCardSet.GetIndex());
+            GameController.Instance.DealCard(Players.Dealer);
         }
     }
 }

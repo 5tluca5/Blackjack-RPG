@@ -13,6 +13,7 @@ public class GameController : MonoBehaviour
     [Header("References")]
     [SerializeField] HUDController hudController;
     [SerializeField] DeckController deckController;
+    [SerializeField] BetPhaseManager betPhaseManager;
     [SerializeField] CameraRaycast cameraRaycast;
     [SerializeField] DealerObject dealer;
 
@@ -22,7 +23,7 @@ public class GameController : MonoBehaviour
 
     [Header("Game Data")]
     [SerializeField] Players currentPlayer = Players.Player1;
-    Dictionary<Players, CardZone> playersCardZone = new();
+    Dictionary<Players, PlayerZone> playersZone = new();
 
     [Header("Debug")]
     [SerializeField] public PlayerProfile PlayerProfile;
@@ -45,11 +46,9 @@ public class GameController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        playersCardZone = new Dictionary<Players, CardZone>
-        {
-            {Players.Dealer, deckController.GetCardZone(Players.Dealer)},
-            {Players.Player1, deckController.GetCardZone(Players.Player1)},
-        };
+        var zones = GameObject.FindGameObjectsWithTag("PlayerZone").Select(x => x.GetComponent<PlayerZone>()).ToDictionary(x => x.Owner);
+
+        playersZone = zones;
 
         currentPhase.Subscribe(x =>
         {
@@ -59,6 +58,13 @@ public class GameController : MonoBehaviour
                     DisableRaycast();
                     break;
                 case GamePhase.PlayerBet:
+                    EnableRaycast();
+                    BetPhaseStarted();
+                    break;
+                case GamePhase.DealingCards:
+                    InitialDealCard();
+                    break;
+
                 case GamePhase.PlayerTurn:
                     EnableRaycast();
                     break;
@@ -104,20 +110,35 @@ public class GameController : MonoBehaviour
 
         yield return new WaitForSeconds(1 * (1 / GameSpeed));
 
-        deckController.InitialDealCard().ToObservable().Subscribe(x =>
-        {
-            Debug.Log("InitialDealCard completed");
-            currentPhase.Value = GamePhase.PlayerTurn;
-        }).AddTo(this);
+        currentPhase.Value = GamePhase.PlayerBet;
+
+        //InitialDealCard().ToObservable().Subscribe(x =>
+        //{
+        //    Debug.Log("InitialDealCard completed");
+        //    currentPhase.Value = GamePhase.PlayerTurn;
+        //}).AddTo(this);
         
         yield return null;
     }
 
+    public IEnumerator InitialDealCard()
+    {
+        if (deckController.IsShuffling() || !IsInitialDeal()) yield return null;
+
+        for (int i = 0; i < 2; i++)
+        {
+            for (Players p = Players.Dealer; p <= Players.Player1; p++)
+            {
+                DealCard(p);
+                yield return new WaitForSeconds(0.5f * (1 / Instance.GameSpeed));
+            }
+        }
+    }
     public bool CanRaycast() => raycastCooldown <= 0f;
     public Players GetCurrentPlayer() => currentPlayer;
     public bool IsPlayerTurn() => currentPhase.Value == GamePhase.PlayerTurn;
-    public bool IsInitialDeal() => currentPhase.Value == GamePhase.ShuffleDeck;
-    public bool IsDealerInteractable() => IsPlayerTurn() && playersCardZone[currentPlayer].IsBothCardRevealed();
+    public bool IsInitialDeal() => currentPhase.Value == GamePhase.DealingCards;
+    public bool IsDealerInteractable() => IsPlayerTurn() && playersZone[currentPlayer].IsBothCardRevealed();
     public void ReceivedInput(KeyCode keyCode)
     {
         GameObject go = cameraRaycast.GetRaycastedObject();
@@ -128,9 +149,11 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void DealCard(Players player, int cardsetIndex)
+    public void DealCard(Players player)
     {
-        deckController.DealCard(player, cardsetIndex);
+        if (!playersZone.ContainsKey(player)) return;
+
+        deckController.DealCard(playersZone[player]);
     }
     #region Player regular actions
 
@@ -149,9 +172,34 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public void BetPhaseStarted()
+    {
+        if (betPhaseManager.IsBettingPhaseActive()) return;
+
+        betPhaseManager.StartBettingPhase(playersZone.Values.ToList());
+    }
+
+    public void BetPhaseEnded()
+    {
+
+    }
+
+    public void PlayerBetConfirmed()
+    {
+
+    }
+
+    public void PlayerAddChipToBetZone(ChipType chipType)
+    {
+        if(!playersZone[currentPlayer].AddChipToBetZone(chipType))
+        {
+            // Show log
+        }
+    }
+
     public void PlayerHit()
     {
-        deckController.DealCard(currentPlayer, 0);
+        deckController.DealCard(playersZone[currentPlayer]);
         SetRaycastCooldown(1f);
     }
 
@@ -189,9 +237,9 @@ public class GameController : MonoBehaviour
     #endregion
     public void UpdatePlayerCardSetPoint(Players player, int cardSetIndex)
     {
-        if (playersCardZone.TryGetValue(player, out var cardZone))
+        if (playersZone.TryGetValue(player, out var playerZone))
         {
-            cardZone.GetCardSet(cardSetIndex).CalculateRevealedCardPoint();
+            playerZone.GetCardSet(cardSetIndex).CalculateRevealedCardPoint();
         }
     }
 
@@ -209,10 +257,10 @@ public class GameController : MonoBehaviour
 
     void ResetTurn()
     {
-        foreach (var playerCardZone in playersCardZone)
+        foreach (var playerZone in playersZone)
         {
-            if(playerCardZone.Value != null)
-                playerCardZone.Value.ResetCardZone();
+            if(playerZone.Value != null)
+                playerZone.Value.Reset();
         }
     }
 
