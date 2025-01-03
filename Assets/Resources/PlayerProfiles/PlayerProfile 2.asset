@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699cca8a4623f0b4cb1f6e98102e4372, type: 3}
   m_Name: PlayerProfile 2
   m_EditorClassIdentifier: 
+  owner: 3
   playerName: HIm
+  playerIcon: {fileID: 21300000, guid: 50f37c86e708c514ea5ad82f202877b9, type: 3}
   playerLevel: 0
   playerExp: 0
   playerChips: 3000

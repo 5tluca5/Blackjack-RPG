@@ -1,6 +1,7 @@
 using GamConstant;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
 public class CardZone : MonoBehaviour
@@ -21,25 +22,24 @@ public class CardZone : MonoBehaviour
         
     }
 
+    public void Setup(PlayerZone playerZone)
+    {
+        owner = playerZone.Owner;
+
+        if (currentCardSet == null && cardSets.Count <= 0)
+            currentCardSet = CreateCardSet();
+    }
+
     public CardSet AddCard(CardDisplay card, int cardSetIndex)
     {
         if (!cardSets.ContainsKey(cardSetIndex))
         {
-            var go = new GameObject("CardSet");
-            var cardSet = go.AddComponent<CardSet>();
-            cardSet.SetIndex(cardSetIndex);
-            go.transform.SetParent(transform);
-            go.transform.localPosition = Vector3.zero;
-            go.transform.localRotation = Quaternion.identity;
-            cardSets[cardSetIndex] = cardSet;
+            var cardSet = CreateCardSet();
 
             if(currentCardSet == null)
             {
                 currentCardSet = cardSet;
             }
-
-            owner = card.GetOwner();
-            cardSet.SetOwner(owner);
 
             cardSet.AddCard(card);
 
@@ -82,9 +82,21 @@ public class CardZone : MonoBehaviour
         }
     }
 
-    public CardSet GetCurrentCardSet() => currentCardSet;
+    public CardSet GetCurrentCardSet()
+    {
+        if (currentCardSet == null && cardSets.Count <= 0)
+        {
+            currentCardSet = CreateCardSet();
+        }
+        else if(cardSets.Count > 0)
+        {
+            currentCardSet = cardSets.Values.First();
+        }
 
-    public CardSet GetCardSet(int index)
+        return currentCardSet;
+    }
+
+        public CardSet GetCardSet(int index)
     {
         if (cardSets.ContainsKey(index))
         {
@@ -113,5 +125,25 @@ public class CardZone : MonoBehaviour
         {
             currentCardSet.FlipNextCard();
         }
+    }
+
+    CardSet CreateCardSet()
+    {
+        var go = new GameObject("CardSet");
+        var cardSet = go.AddComponent<CardSet>();
+        cardSet.SetIndex(0);
+        go.transform.SetParent(transform);
+        go.transform.localPosition = Vector3.zero;
+        go.transform.localRotation = Quaternion.identity;
+        cardSets[0] = cardSet;
+
+        if (currentCardSet == null)
+        {
+            currentCardSet = cardSet;
+        }
+
+        cardSet.SetOwner(owner);
+
+        return cardSet;
     }
 }

@@ -44,7 +44,7 @@ public class CurvedHorizontalLayout3D : MonoBehaviour
             float xPosition = currentX + halfWidth;
 
             // Apply curve
-            float curvedOffset = Mathf.Sin((i / (float)(children.Length - 1)) * Mathf.PI) * curve;
+            float curvedOffset = children.Length <= 1 ? 0 : Mathf.Sin((i / (float)(children.Length - 1)) * Mathf.PI) * curve;
 
             // Determine axis for curve (Y-axis or Z-axis)
             float yPosition = child.localPosition.y;

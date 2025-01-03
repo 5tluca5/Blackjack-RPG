@@ -13,25 +13,42 @@ public class DealerObject : MonoBehaviour, Interactable
     IDisposable dealerActionPhase = null;
     public void Interact(KeyCode keyCode)
     {
-        if(keyCode == KeyCode.Space)
+        if (GameController.Instance.IsBetPhase())
         {
-            GameController.Instance.PlayerHit();
+            if(keyCode == KeyCode.Space)
+            {
+                GameController.Instance.PlayerBetConfirmed();
+            }
         }
-        else if (keyCode == KeyCode.E)
+        else if (GameController.Instance.IsPlayerTurn())
         {
-            GameController.Instance.PlayerStand();
+            if (keyCode == KeyCode.Space)
+            {
+                GameController.Instance.PlayerHit();
+            }
+            else if (keyCode == KeyCode.E)
+            {
+                GameController.Instance.PlayerStand();
+            }
+            else if (keyCode == KeyCode.D)
+            {
+                GameController.Instance.PlayerDoubleDown();
+            }
+            else if (keyCode == KeyCode.S)
+            {
+                GameController.Instance.PlayerSplit();
+            }
+            else if (keyCode == KeyCode.Q)
+            {
+                GameController.Instance.PlayerSurrender();
+            }
         }
-        else if (keyCode == KeyCode.D)
+        else if(GameController.Instance.IsSettlementPhase())
         {
-            GameController.Instance.PlayerDoubleDown();
-        }
-        else if (keyCode == KeyCode.S)
-        {
-            GameController.Instance.PlayerSplit();
-        }
-        else if (keyCode == KeyCode.Q)
-        {
-            GameController.Instance.PlayerSurrender();
+            if (keyCode == KeyCode.Space)
+            {
+                GameController.Instance.PlayerGoToNextRound();
+            }
         }
     }
 

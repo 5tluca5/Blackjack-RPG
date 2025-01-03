@@ -1,5 +1,6 @@
 using GamConstant;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Scoreboard : MonoBehaviour
@@ -11,19 +12,24 @@ public class Scoreboard : MonoBehaviour
 
     private void Awake()
     {
-        // Create ScoreboardItem for each player
-        for(Players player = Players.Dealer; player <= Players.Player1; player++)
-        //foreach (Players player in System.Enum.GetValues(typeof(Players)))
-        {
-            var scoreboardItem = Instantiate(ScoreboardItemPrefab, transform).GetComponent<ScoreboardItem>();
-            scoreboardItem.Setup(player, playersIcon[(int)player], 0);
-            scoreboardItems.Add(player, scoreboardItem);
-        }
+        
     }
-
+    
     private void Start()
     {
         
+    }
+    
+    public void Setup(Dictionary<Players, PlayerProfile> playerProfiles)
+    {
+        playerProfiles = playerProfiles.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+
+        foreach (var playerProfile in playerProfiles)
+        {
+            var scoreboardItem = Instantiate(ScoreboardItemPrefab, transform).GetComponent<ScoreboardItem>();
+            scoreboardItem.Setup(playerProfile.Key, playerProfile.Value);
+            scoreboardItems.Add(playerProfile.Key, scoreboardItem);
+        }
     }
 
     public void UpdatePoint(Players player, int point)
@@ -31,5 +37,10 @@ public class Scoreboard : MonoBehaviour
         if (!scoreboardItems.ContainsKey(player)) return;
 
         scoreboardItems[player].SetPlayerPoint(point);
+    }
+
+    public void Reset()
+    {
+        
     }
 }

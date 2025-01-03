@@ -18,6 +18,7 @@ public class PlayerZone : MonoBehaviour
     [Header("Parameters")]
     [SerializeField] bool betPlaced = false;
     [SerializeField] int curCardsetIndex;
+    [SerializeField] int betValue;
 
     private void Start()
     {
@@ -30,7 +31,8 @@ public class PlayerZone : MonoBehaviour
     public Players Owner => owner;
     public bool IsBothCardRevealed() => cardZone.IsBothCardRevealed();
     public bool IsBetPlaced() => betPlaced;
-
+    public int GetBetValue() => betValue;
+    public int GetTotalPoint() => GetCurrentCardSet().GetRevealedCardPoint();
     public CardSet GetCardSet(int cardSetIndex) => cardZone.GetCardSet(cardSetIndex);
 
     public CardSet GetCurrentCardSet() => cardZone.GetCurrentCardSet();
@@ -64,14 +66,24 @@ public class PlayerZone : MonoBehaviour
         chipZone.BetPhaseStarted();
     }
 
-    public void PlacedBet()
+    public void ConfirmBet()
     {
         betPlaced = true;
     }
 
+    public void EndPlacingBet()
+    {
+        chipZone.BetPhaseEnded();
+        betValue = betZone.BetPhaseEnded();
+
+        playerProfile.AddChips(-betValue);
+    }
+
     public void Reset()
     {
+        betPlaced = false;
         cardZone.ResetCardZone();
+        playerProfile.Refresh();
     }
 
     public bool AddChipToBetZone(ChipType chipType)
@@ -80,5 +92,19 @@ public class PlayerZone : MonoBehaviour
 
         betZone.AddChip(chipType);
         return true;
+    }
+
+    public bool IsBusted()
+    {
+        int point = GetCurrentCardSet().GetRevealedCardPoint();
+
+        return point > 21;
+    }
+
+    public bool IsBlackJack()
+    {
+        int point = GetCurrentCardSet().GetRevealedCardPoint();
+
+        return point == 21 && GetCurrentCardSet().GetCardCount() == 2;
     }
 }

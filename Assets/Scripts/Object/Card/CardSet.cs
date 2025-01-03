@@ -32,7 +32,8 @@ public class CardSet : MonoBehaviour
     public int GetIndex() => index;
 
     public ReactiveProperty<int> SubscribeRevealedCardPoint() => revealedCardPoint;
-
+    public int GetRevealedCardPoint() => revealedCardPoint.Value;
+    public int GetCardCount() => cards.Count;
     public void SetOwner(Players owner) => this.owner = owner;
 
     public Players GetOwner() => this.owner;

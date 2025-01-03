@@ -1,4 +1,5 @@
 using GamConstant;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,10 +16,14 @@ public class HUDController : MonoBehaviour
 
     [Header("Prompts")]
     [SerializeField] PromptGroup promptPlayerCard;
+    [SerializeField] PromptGroup promptPlayerBetAction;
     [SerializeField] PromptGroup promptPlayerRegularAction;
 
     [Header("Scoreboard")]
     [SerializeField] Scoreboard scoreboard;
+
+    [Header("Bet Timer")]
+    [SerializeField] BetTimer betTimer;
 
     private void Awake()
     {
@@ -56,7 +61,10 @@ public class HUDController : MonoBehaviour
             }
             else if(go.CompareTag("Dealer") && isInteractable)
             {
-                promptPlayerRegularAction.Show();
+                if(GameController.Instance.IsBetPhase())
+                    promptPlayerBetAction.Show();
+                else if(GameController.Instance.IsPlayerTurn())
+                    promptPlayerRegularAction.Show();
             }
 
             SwitchAimColor(isInteractable);
@@ -72,8 +80,27 @@ public class HUDController : MonoBehaviour
         aimDot.color = isInteractable ? aimColorInteractable : aimColorNormal;
     }
 
+    public void SetupScoreboard(Dictionary<Players, PlayerProfile> playerProfiles)
+    {
+        scoreboard.Setup(playerProfiles);
+    }
     public void UpdateScoreboardPoint(Players player, int point)
     {
         scoreboard.UpdatePoint(player, point);
+    }
+
+    public void ShowBetTimer(float initTime, float showAnimationDuration = 0.5f)
+    {
+        betTimer.Show(initTime, showAnimationDuration);
+    }
+
+    public void HideBetTimer(float hideAnimationDuration = 0.5f)
+    {
+        betTimer.Hide(hideAnimationDuration);
+    }
+
+    public void UpdateBetTimer(float time)
+    {
+        betTimer.UpdateTimer(time);
     }
 }

@@ -14,10 +14,29 @@ public class BetZone : MonoBehaviour
     ReactiveProperty<int> betValue = new(0);
 
     public ReactiveProperty<int> OnBetValueChanged() => betValue;
+    public int BetValue => betValue.Value;
 
-    public void AddChip(ChipType chipType)
+    private void Start()
     {
-        var chip = Instantiate(chipPrefab, spawnPoint);
+            
+    }
+
+    public void AddChip(ChipType chipType = ChipType.Chip_5)
+    {
+        // Define the range for random offset
+        float randomX = Random.Range(-0.1f, 0.1f); // Random X offset between -1 and 1
+        float randomY = 0;
+        float randomZ = Random.Range(-0.1f, 0.1f); // Random Z offset between -1 and 1
+
+        // Combine into a Vector3 offset
+        Vector3 randomOffset = new Vector3(randomX, randomY, randomZ);
+
+        // Apply the random offset to the spawnPoint position
+        Vector3 spawnPosition = spawnPoint.position + randomOffset;
+
+        var chip = Instantiate(chipPrefab, transform);
+        chip.transform.position = spawnPosition;
+
         var chipObject = chip.GetComponent<ChipObject>();
         chipObject.SetChipValue(chipType);
         chipObject.SetKinematic(false);

@@ -9,12 +9,13 @@ namespace GamConstant
         MultiPlayer
     }
 
-    public enum Players
+    public enum Players : int
     {
-        Dealer,
+        Dealer = 0,
         Player1,
         Player2,
-        Player3
+        Player3,
+        NullPlayer,
     }
 
     [Serializable]
@@ -44,4 +45,5 @@ namespace GamConstant
         Chip_1000 = 1000,
         Chip_5000 = 5000
     }
+
 }

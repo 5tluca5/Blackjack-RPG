@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using CardAttribute;
 using System.Linq;
+using UnityEngine.Rendering.Universal;
 
 public class GameController : MonoBehaviour
 {
@@ -49,40 +50,40 @@ public class GameController : MonoBehaviour
         var zones = GameObject.FindGameObjectsWithTag("PlayerZone").Select(x => x.GetComponent<PlayerZone>()).ToDictionary(x => x.Owner);
 
         playersZone = zones;
+        hudController.SetupScoreboard(zones.ToDictionary(x => x.Key, x => x.Value.GetPlayerProfile()));
 
         currentPhase.Subscribe(x =>
         {
             switch (x)
             {
                 case GamePhase.ShuffleDeck:
-                    DisableRaycast();
+                    PhaseShuffleDeck().ToObservable().Subscribe();
                     break;
                 case GamePhase.PlayerBet:
-                    EnableRaycast();
-                    BetPhaseStarted();
+                    PhasePlayerBet();
                     break;
                 case GamePhase.DealingCards:
-                    InitialDealCard();
+                    PhaseDealingCards().ToObservable().Subscribe();
                     break;
-
                 case GamePhase.PlayerTurn:
                     EnableRaycast();
                     break;
                 case GamePhase.DealerTurn:
-                    DisableRaycast();
+                    PhaseDealerTurn();
                     break;
                 case GamePhase.SettlementPhase:
-                    DisableRaycast();
+                    PhaseSettlementPhase().ToObservable().Subscribe();
                     break;
                 case GamePhase.NextRound:
+                    PhaseNextRound().ToObservable().Subscribe();
                     break;
             }
 
-            Debug.Log("Current Phase: " + x);
+            GameLogger.Instance.Log("Current Phase: " + x);
 
         }).AddTo(this);
 
-        StartNewTurn().ToObservable().Subscribe();
+        SetGamePhase(GamePhase.ShuffleDeck);
     }
 
     // Update is called once per frame
@@ -97,9 +98,10 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public IEnumerator StartNewTurn()
+    #region Game Phases
+    IEnumerator PhaseShuffleDeck()
     {
-        currentPhase.Value = GamePhase.ShuffleDeck;
+        DisableRaycast();
 
         ResetTurn();
 
@@ -110,7 +112,7 @@ public class GameController : MonoBehaviour
 
         yield return new WaitForSeconds(1 * (1 / GameSpeed));
 
-        currentPhase.Value = GamePhase.PlayerBet;
+        SetGamePhase(GamePhase.PlayerBet);
 
         //InitialDealCard().ToObservable().Subscribe(x =>
         //{
@@ -121,28 +123,118 @@ public class GameController : MonoBehaviour
         yield return null;
     }
 
-    public IEnumerator InitialDealCard()
+    void PhasePlayerBet()
+    {
+        if (betPhaseManager.IsBettingPhaseActive()) return;
+
+        EnableRaycast();
+
+        betPhaseManager.StartBettingPhase(playersZone.Values.Where(x => x.Owner != Players.Dealer).ToList());
+    }
+
+    IEnumerator PhaseDealingCards()
     {
         if (deckController.IsShuffling() || !IsInitialDeal()) yield return null;
 
+        List<Players> order = new List<Players>() { Players.Player3, Players.Player2, Players.Player1, Players.Dealer};
+        
         for (int i = 0; i < 2; i++)
         {
-            for (Players p = Players.Dealer; p <= Players.Player1; p++)
+            foreach(var p in order)
             {
-                DealCard(p);
-                yield return new WaitForSeconds(0.5f * (1 / Instance.GameSpeed));
+                if (playersZone.ContainsKey(p))
+                {
+                    DealCard(p);
+                    yield return new WaitForSeconds(0.5f * (1 / Instance.GameSpeed));
+                }
             }
         }
+
+
+        yield return new WaitForSeconds(1 * (1 / GameSpeed));
+
+        SetGamePhase(GamePhase.PlayerTurn);
     }
+
+    void PhaseDealerTurn()
+    {
+        DisableRaycast();
+
+        var onCompleted = dealer.ExecuteDealerActionPhase();
+
+        if (onCompleted != null)
+        {
+            onCompleted.Subscribe(_ =>
+            {
+                SetGamePhase(GamePhase.SettlementPhase);
+            }).AddTo(this);
+        }
+    }
+
+    IEnumerator PhaseSettlementPhase()
+    {
+        DisableRaycast();
+
+        var winner = DetermineWinner(Players.Dealer, currentPlayer);
+        var pp = GetCurrentPlayerProfile();
+        var dp = playersZone[Players.Dealer].GetPlayerProfile();
+        var betValue = playersZone[currentPlayer].GetBetValue();
+        
+        if (winner == currentPlayer)
+        {
+            betValue = playersZone[currentPlayer].IsBlackJack() ? (int)(betValue * 2.5f) : betValue * 2;
+
+            GameLogger.Instance.Log($"[{pp.LogPlayerName}] Won {betValue.LogWinningChips()}!");
+            pp.AddChips(betValue);
+            dp.AddChips(-betValue);
+        }
+        else if (winner == Players.Dealer)
+        {
+            GameLogger.Instance.Log($"[{pp.LogPlayerName}] Lost {betValue.LogLossingChips()}!");
+            dp.AddChips(betValue);
+        }
+        else
+        {
+            GameLogger.Instance.Log($"[{pp.LogPlayerName}] Tied!");
+            pp.AddChips(betValue);
+        }
+
+        yield return new WaitForSeconds(2 * (1 / GameSpeed));
+
+        EnableRaycast();
+    }
+
+    IEnumerator PhaseNextRound()
+    {
+        DisableRaycast();
+        ResetTurn();
+
+        yield return new WaitForSeconds(1 * (1 / GameSpeed));
+
+        SetGamePhase(GamePhase.ShuffleDeck);
+    }
+    #endregion
+
     public bool CanRaycast() => raycastCooldown <= 0f;
+    public void SetGamePhase(GamePhase phase) => currentPhase.Value = phase;
     public Players GetCurrentPlayer() => currentPlayer;
+    public PlayerProfile GetCurrentPlayerProfile() => playersZone[currentPlayer].GetPlayerProfile();
+    public ReactiveProperty<GamePhase> OnGamePhaseChanged() => currentPhase;
+    public GamePhase GetCurrentPhase() => currentPhase.Value;
+    public bool IsBetPhase() => currentPhase.Value == GamePhase.PlayerBet;
+
     public bool IsPlayerTurn() => currentPhase.Value == GamePhase.PlayerTurn;
     public bool IsInitialDeal() => currentPhase.Value == GamePhase.DealingCards;
-    public bool IsDealerInteractable() => IsPlayerTurn() && playersZone[currentPlayer].IsBothCardRevealed();
+    public bool IsSettlementPhase() => currentPhase.Value == GamePhase.SettlementPhase;
+    public bool IsDealerInteractable()
+    {
+        return (IsPlayerTurn() && playersZone[currentPlayer].IsBothCardRevealed())
+            || (IsBetPhase() && !playersZone[currentPlayer].IsBetPlaced() && playersZone[currentPlayer].GetBetValue() > 0);
+    }
     public void ReceivedInput(KeyCode keyCode)
     {
         GameObject go = cameraRaycast.GetRaycastedObject();
-
+        
         if (go != null && go.TryGetComponent(out Interactable interactable))
         {
             interactable.Interact(keyCode);
@@ -172,21 +264,20 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void BetPhaseStarted()
-    {
-        if (betPhaseManager.IsBettingPhaseActive()) return;
-
-        betPhaseManager.StartBettingPhase(playersZone.Values.ToList());
-    }
-
     public void BetPhaseEnded()
     {
+        PlayerBetConfirmed();
+        playersZone[currentPlayer].EndPlacingBet();
 
+        SetGamePhase(GamePhase.DealingCards);
     }
 
     public void PlayerBetConfirmed()
     {
+        if (playersZone[currentPlayer].IsBetPlaced()) return;
 
+        playersZone[currentPlayer].ConfirmBet();
+        GameLogger.Instance.Log($"[{GetCurrentPlayerProfile().LogPlayerName}] placed bet: {playersZone[currentPlayer].GetBetValue().LogWinningChips()}.");
     }
 
     public void PlayerAddChipToBetZone(ChipType chipType)
@@ -206,17 +297,8 @@ public class GameController : MonoBehaviour
     public void PlayerStand()
     {
         // Next phase
-        currentPhase.Value = GamePhase.DealerTurn;
+        SetGamePhase(GamePhase.DealerTurn);
 
-        var onCompleted = dealer.ExecuteDealerActionPhase();
-
-        if(onCompleted != null)
-        {
-            onCompleted.Subscribe(_ =>
-            {
-                currentPhase.Value = GamePhase.SettlementPhase;
-            }).AddTo(this);
-        }
     }
 
     public void PlayerSplit()
@@ -232,6 +314,11 @@ public class GameController : MonoBehaviour
     public void PlayerSurrender()
     {
 
+    }
+
+    public void PlayerGoToNextRound()
+    {
+        SetGamePhase(GamePhase.NextRound);
     }
 
     #endregion
@@ -253,7 +340,6 @@ public class GameController : MonoBehaviour
             }).AddTo(cardset);
         }
     }
-
 
     void ResetTurn()
     {
@@ -281,5 +367,23 @@ public class GameController : MonoBehaviour
     {
         raycastCooldown = 0;
         cameraRaycast.setRaycastEnable(true);
+    }
+
+    public Players DetermineWinner(Players dealer,  Players player)
+    {
+        // Adjust logic here
+        var dp = playersZone[dealer];
+        var pp = playersZone[player];
+
+        if (pp.IsBusted()) return dealer;
+        if (dp.IsBusted()) return player;
+
+        //If the dealer takes five cards without busting the cards, it is considered a victory for the dealer.
+        if (dp.GetCurrentCardSet().GetCardCount() >= 5) return dealer;
+
+        if (pp.GetTotalPoint() > dp.GetTotalPoint()) return player;
+        if (pp.GetTotalPoint() < dp.GetTotalPoint()) return dealer;
+
+        return Players.NullPlayer;  // Draw
     }
 }

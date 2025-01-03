@@ -19,7 +19,9 @@ public class ChipObject : MonoBehaviour, Interactable
     // Animation Keys
     protected const string ANI_KEY_Spawn = "Spawn";
     protected const string ANI_KEY_Hide = "Hide";
+    protected const string ANI_KEY_Hit = "Hit";
 
+    Rigidbody rb;
     Subject<int> chipValueSubject = new Subject<int>();
 
     public int ChipValue => chipValue;
@@ -34,13 +36,15 @@ public class ChipObject : MonoBehaviour, Interactable
 
     public bool IsInteractable()
     {
-        return animator.GetCurrentAnimatorStateInfo(0).IsName("Idle");
-        //throw new System.NotImplementedException();
+        if (!GameController.Instance.IsBetPhase()) return false;
+
+        return animator.GetCurrentAnimatorStateInfo(0).IsName("Idle") && rb.isKinematic;
     }
 
     public void SetChipValue(ChipType value)
     {
         chipValueSubject = new Subject<int>();
+        rb = GetComponent<Rigidbody>();
 
         chipValue = (int)value;
 
@@ -69,18 +73,25 @@ public class ChipObject : MonoBehaviour, Interactable
 
     public void SetKinematic(bool set)
     {
-        GetComponent<Rigidbody>().isKinematic = set;
+        rb.isKinematic = set;
     }
 
     public Subject<int> OnChipInteracted() => chipValueSubject;
 
     public void Show()
     {
+        gameObject.SetActive(true);
         animator.SetTrigger(ANI_KEY_Spawn);
     }
 
     public void Hide()
     {
         animator.SetTrigger(ANI_KEY_Hide);
+    }
+
+    public void Hit()
+    {
+        animator.SetTrigger(ANI_KEY_Hit);
+
     }
 }

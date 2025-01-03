@@ -1,24 +1,28 @@
 using UnityEngine;
 using TMPro; // For TextMeshPro support
 using DG.Tweening;
+using UniRx;
 
 public class TypewriterEffect : MonoBehaviour
 {
     public TextMeshProUGUI textComponent; // TextMeshPro component
     public float typeSpeed = 0.05f; // Time delay between characters
 
-    private string fullText; // The full text to display
-    private string currentText = ""; // The current text being displayed
+    protected string fullText; // The full text to display
+    protected string currentText = ""; // The current text being displayed
 
     void Start()
     {
-        fullText = textComponent.text; // Store the full text
-        textComponent.text = ""; // Clear the text
-        PlayTypewriterEffect();
+        //fullText = textComponent.text; // Store the full text
+        //textComponent.text = ""; // Clear the text
+        //PlayTypewriterEffect();
     }
 
-    public void PlayTypewriterEffect()
+    public Subject<bool> PlayTypewriterEffect(string fullText)
     {
+        this.fullText = fullText;
+        var subject = new Subject<bool>();
+
         // Clear any existing text and initialize the typewriter effect
         textComponent.text = "";
         currentText = "";
@@ -43,7 +47,15 @@ public class TypewriterEffect : MonoBehaviour
                 currentText += fullText[index];
                 textComponent.text = currentText; // Update the text component
             });
-            typewriterSequence.AppendInterval( typeSpeed);
+            typewriterSequence.AppendInterval(typeSpeed);
         }
+
+        typewriterSequence.AppendCallback(() =>
+        {
+            subject.OnNext(true); // Notify subscribers that the typewriter effect has completed
+            subject.OnCompleted();
+        });
+
+        return subject;
     }
 }

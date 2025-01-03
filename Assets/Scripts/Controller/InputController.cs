@@ -21,7 +21,7 @@ public class InputController : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.F4))
         {
-            gameController.StartNewTurn().ToObservable().Subscribe();
+            gameController.SetGamePhase(GamConstant.GamePhase.ShuffleDeck);
         }
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {

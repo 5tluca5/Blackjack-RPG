@@ -3,6 +3,7 @@ using UnityEngine;
 using UniRx;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 public class ChipZone : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class ChipZone : MonoBehaviour
         //}
         Reset();
 
-        for (ChipType chipType = ChipType.Chip_5; chipType <= ChipType.Chip_5000; chipType++)
+        foreach(ChipType chipType in Enum.GetValues(typeof(ChipType)))
         {
             int chipValue = (int)chipType;
 
@@ -48,10 +49,12 @@ public class ChipZone : MonoBehaviour
             {
                 var chip = Instantiate(chipPrefab, transform);
                 var chipObject = chip.GetComponent<ChipObject>();
+                chip.SetActive(false);
                 chipObject.SetChipValue(chipType);
                 chipObject.SetKinematic(true);
                 chipObject.OnChipInteracted().Subscribe(x =>
                 {
+                    chipObject.Hit();
                     GameController.Instance.PlayerAddChipToBetZone(chipType);
                 }).AddTo(chip);
 
@@ -60,6 +63,27 @@ public class ChipZone : MonoBehaviour
             else
                 break;
         }
+
+        //for (ChipType chipType = ChipType.Chip_5; chipType <= ChipType.Chip_5000; chipType++)
+        //{
+        //    int chipValue = (int)chipType;
+
+        //    if (playerChips >= chipValue)
+        //    {
+        //        var chip = Instantiate(chipPrefab, transform);
+        //        var chipObject = chip.GetComponent<ChipObject>();
+        //        chipObject.SetChipValue(chipType);
+        //        chipObject.SetKinematic(true);
+        //        chipObject.OnChipInteracted().Subscribe(x =>
+        //        {
+        //            GameController.Instance.PlayerAddChipToBetZone(chipType);
+        //        }).AddTo(chip);
+
+        //        chipObjects.Add(chipObject);
+        //    }
+        //    else
+        //        break;
+        //}
     }
 
     public void BetPhaseStarted()
@@ -80,7 +104,8 @@ public class ChipZone : MonoBehaviour
 
     IEnumerator ShowChips()
     {
-        float showDuration = 0.5f * (1 / GameController.Instance.GameSpeed);
+        float showDuration = 1f * (1 / GameController.Instance.GameSpeed);
+
         foreach (var chip in chipObjects)
         {
             chip.Show();
@@ -90,7 +115,7 @@ public class ChipZone : MonoBehaviour
 
     IEnumerator HideChips()
     {
-        float hideDuration = 0.5f * (1 / GameController.Instance.GameSpeed);
+        float hideDuration = 1f * (1 / GameController.Instance.GameSpeed);
         foreach (var chip in chipObjects)
         {
             chip.Hide();
