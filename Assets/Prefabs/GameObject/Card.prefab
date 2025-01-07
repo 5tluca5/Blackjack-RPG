@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 7057476759777474784}
   - component: {fileID: 2098381016900775953}
   - component: {fileID: 520319399409094637}
-  - component: {fileID: 5191218051639312394}
+  - component: {fileID: 5200422130143921358}
   m_Layer: 0
   m_Name: CardObject
   m_TagString: CardDisplay
@@ -97,7 +97,7 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 9
+  m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 2f471a9446d832e4392fb2a2e5ec0851, type: 2}
@@ -181,7 +181,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5191218051639312394
+--- !u!114 &5200422130143921358
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -190,10 +190,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 4439520168720282909}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6f98c18ba0867c44a84df76fd713e0a, type: 3}
+  m_Script: {fileID: 11500000, guid: 769c5187602845c429a7a4465c6cf50e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineLayer:
+  renderers: []
+  interactableOutlineLayer:
     serializedVersion: 0
-    m_Bits: 2
-  activate: 0
+    m_Bits: 0
+  OnHoverOutlineLayer:
+    serializedVersion: 0
+    m_Bits: 8
+  hoverWhenInteractable: 1

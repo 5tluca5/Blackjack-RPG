@@ -15,16 +15,24 @@ public class ChipObject : MonoBehaviour, Interactable
     [SerializeField] Mesh mesh_5000;
 
     [SerializeField] int chipValue;
+    [SerializeField] bool isInteractable = false;
 
     // Animation Keys
     protected const string ANI_KEY_Spawn = "Spawn";
     protected const string ANI_KEY_Hide = "Hide";
     protected const string ANI_KEY_Hit = "Hit";
+    protected const string ANI_KEY_Placed = "Placed";
 
     Rigidbody rb;
     Subject<int> chipValueSubject = new Subject<int>();
 
     public int ChipValue => chipValue;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        isInteractable = animator.GetCurrentAnimatorStateInfo(0).IsName("Idle") && rb.isKinematic; ;
+    }
 
     public void Interact(KeyCode keyCode)
     {
@@ -38,7 +46,7 @@ public class ChipObject : MonoBehaviour, Interactable
     {
         if (!GameController.Instance.IsBetPhase()) return false;
 
-        return animator.GetCurrentAnimatorStateInfo(0).IsName("Idle") && rb.isKinematic;
+        return isInteractable;
     }
 
     public void SetChipValue(ChipType value)
@@ -76,6 +84,16 @@ public class ChipObject : MonoBehaviour, Interactable
         rb.isKinematic = set;
     }
 
+    public void SetInteractable(bool set)
+    {
+        isInteractable = set;
+
+        var outline = GetComponentInChildren<InteractableOutline>();
+
+        if (outline != null)
+            outline.SetInteractable(set);
+    }
+
     public Subject<int> OnChipInteracted() => chipValueSubject;
 
     public void Show()
@@ -92,6 +110,9 @@ public class ChipObject : MonoBehaviour, Interactable
     public void Hit()
     {
         animator.SetTrigger(ANI_KEY_Hit);
-
+    }
+    public void Placed()
+    {
+        animator.SetTrigger(ANI_KEY_Placed);
     }
 }

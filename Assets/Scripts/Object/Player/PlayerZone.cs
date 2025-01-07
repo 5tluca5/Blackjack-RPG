@@ -11,7 +11,7 @@ public class PlayerZone : MonoBehaviour
 
     [Header("References")]
     [SerializeField] CardZone cardZone;
-    [SerializeField] ChipZone chipZone;
+    //[SerializeField] ChipZone chipZone;
     [SerializeField] BetZone betZone;
     [SerializeField] List<Transform> cardPosRefs;
 
@@ -23,9 +23,10 @@ public class PlayerZone : MonoBehaviour
     private void Start()
     {
         cardZone = GetComponentInChildren<CardZone>();
-        chipZone = GetComponentInChildren<ChipZone>();
+        //chipZone = GetComponentInChildren<ChipZone>();
 
-        chipZone.Setup(this);
+        cardZone.Setup(this);
+        //chipZone.Setup(this);
     }
 
     public Players Owner => owner;
@@ -62,8 +63,8 @@ public class PlayerZone : MonoBehaviour
     
     public void StartPlacingBet()
     {
-        chipZone.SetPlayerChipValue(playerProfile.Chips);
-        chipZone.BetPhaseStarted();
+        //chipZone.SetPlayerChipValue(playerProfile.Chips);
+        //chipZone.BetPhaseStarted();
     }
 
     public void ConfirmBet()
@@ -73,8 +74,13 @@ public class PlayerZone : MonoBehaviour
 
     public void EndPlacingBet()
     {
-        chipZone.BetPhaseEnded();
+        //chipZone.BetPhaseEnded();
         betValue = betZone.BetPhaseEnded();
+
+        if(betValue < RuleController.Instance.MinBet)
+        {
+            betValue = betZone.SetToMinBet();
+        }
 
         playerProfile.AddChips(-betValue);
     }
@@ -91,6 +97,8 @@ public class PlayerZone : MonoBehaviour
         if (playerProfile.Chips < (int)chipType) return false;
 
         betZone.AddChip(chipType);
+        betValue = betZone.BetValue;
+
         return true;
     }
 

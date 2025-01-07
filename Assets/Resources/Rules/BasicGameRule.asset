@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4488bd324c8694f2a81ebb244641292b, type: 3}
+  m_Name: BasicGameRule
+  m_EditorClassIdentifier: 
+  minBet: 200
+  maxBet: 1000
+  numberOfDecks: 1
+  bustPoint: 21
+  blackJackPoint: 21
+  dealerMinPoint: 17
+  maxSplits: 2
+  allowSurrender: 1
+  allowSplitting: 1
+  allowDoubleDown: 1
+  blackjackPayout: 1.5
+  insurancePayout: 2
+  betPhaseTimeLimit: 300
+  decisionTimeLimit: 30

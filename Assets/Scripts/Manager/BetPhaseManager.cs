@@ -23,6 +23,7 @@ public class BetPhaseManager : MonoBehaviour//NetworkBehaviour
     //[Server]
     public void StartBettingPhase(List<PlayerZone> players)
     {
+        bettingTime = RuleController.Instance.BetPhaseTimeLimit;
         bettingPhaseActive = true;
         timer = bettingTime;
 
@@ -45,7 +46,7 @@ public class BetPhaseManager : MonoBehaviour//NetworkBehaviour
     //[Server]
     private IEnumerator BettingTimer()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
 
         bettingPhaseStarted = true;
 

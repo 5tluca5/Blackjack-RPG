@@ -17,7 +17,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - HighPriorityLayer
   - 
   - 
   - 
@@ -55,3 +55,6 @@ TagManager:
   - Light Layer 4
   - Light Layer 5
   - Light Layer 6
+  - OnCancel
+  - OnHovor
+  - OnCancel WhiteOutline

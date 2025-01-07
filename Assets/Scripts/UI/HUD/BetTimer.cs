@@ -1,10 +1,12 @@
 using TMPro;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UI;
 
 public class BetTimer : MonoBehaviour
 {
     [SerializeField] Transform timerTF;
+    [SerializeField] Image timeImg;
     [SerializeField] TextMeshProUGUI timeText;
 
     float initialTime;
@@ -34,8 +36,10 @@ public class BetTimer : MonoBehaviour
         timeText.text = Mathf.CeilToInt(time).ToString();
 
         var color = timeText.color;
-        color.g = 255 * (time / initialTime);
+        color.g = 1 * (time / initialTime);
         timeText.color = color;
+
+        timeImg.fillAmount = 1 * (time / initialTime);
     }
 
     public void Hide(float duration)

@@ -15,6 +15,7 @@ MonoBehaviour:
   owner: 2
   playerName: HIm
   playerIcon: {fileID: 21300000, guid: 50f37c86e708c514ea5ad82f202877b9, type: 3}
-  playerLevel: 0
+  playerLevel: 1
   playerExp: 0
-  playerChips: 3000
+  playerTotalFunds: 10000
+  playerTableChips: 3000

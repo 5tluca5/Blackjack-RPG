@@ -48,7 +48,7 @@ public class CardZone : MonoBehaviour
 
         cardSets[cardSetIndex].AddCard(card);
 
-        return null;
+        return cardSets[cardSetIndex];
     }
 
     public void Rearrange()

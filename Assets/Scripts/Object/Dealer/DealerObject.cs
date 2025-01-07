@@ -8,6 +8,7 @@ public class DealerObject : MonoBehaviour, Interactable
 {
     [Header("References")]
     [SerializeField] PlayerZone playerZone;
+    [SerializeField] InteractableOutline interactableOutline;
 
     bool executingDealerPhase = false;
     IDisposable dealerActionPhase = null;
@@ -60,7 +61,8 @@ public class DealerObject : MonoBehaviour, Interactable
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        if (interactableOutline == null)
+            interactableOutline = TryGetComponent<InteractableOutline>(out var io) ? io : GetComponentInChildren<InteractableOutline>();
     }
 
     // Update is called once per frame
@@ -138,5 +140,10 @@ public class DealerObject : MonoBehaviour, Interactable
         {
             GameController.Instance.DealCard(Players.Dealer);
         }
+    }
+
+    public void SetInteractable(bool set)
+    {
+        interactableOutline.SetInteractable(set);
     }
 }

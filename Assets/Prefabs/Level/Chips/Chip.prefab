@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9026972752182505690}
   - component: {fileID: 5936708651045765719}
   - component: {fileID: 7792676794214239931}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ChipMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,8 @@ GameObject:
   - component: {fileID: 631316601488957061}
   - component: {fileID: 8044532345195314684}
   - component: {fileID: 3333562626995006368}
-  m_Layer: 0
+  - component: {fileID: 3083764538967019979}
+  m_Layer: 6
   m_Name: Chip (Collider)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -231,6 +232,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ef8e2ec17c993642aa2cac48896ebbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3083764538967019979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4222463376961615576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 769c5187602845c429a7a4465c6cf50e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  renderers:
+  - {fileID: 5936708651045765719}
+  interactableOutlineLayer:
+    serializedVersion: 0
+    m_Bits: 0
+  OnHoverOutlineLayer:
+    serializedVersion: 0
+    m_Bits: 640
+  hoverWhenInteractable: 1
 --- !u!1 &4558192763499541230
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,8 +264,7 @@ GameObject:
   - component: {fileID: 8367945982152444614}
   - component: {fileID: 4994945557936713485}
   - component: {fileID: 4534785000787672044}
-  - component: {fileID: 6463271416812728523}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Chip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -288,6 +309,7 @@ MonoBehaviour:
   mesh_1000: {fileID: 6332182644202673288, guid: 6281d49966ef8d34d8f2e88b1c1be738, type: 3}
   mesh_5000: {fileID: 7152885090885647303, guid: 6281d49966ef8d34d8f2e88b1c1be738, type: 3}
   chipValue: 0
+  isInteractable: 0
 --- !u!54 &4534785000787672044
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -310,26 +332,8 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &6463271416812728523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4558192763499541230}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 769c5187602845c429a7a4465c6cf50e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  interactableOutlineLayer:
-    serializedVersion: 0
-    m_Bits: 2
-  OnHoverOutlineLayer:
-    serializedVersion: 0
-    m_Bits: 2

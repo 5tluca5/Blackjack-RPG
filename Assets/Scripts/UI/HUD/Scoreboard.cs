@@ -9,7 +9,7 @@ public class Scoreboard : MonoBehaviour
     [SerializeField] List<Sprite> playersIcon;
 
     Dictionary<Players, ScoreboardItem> scoreboardItems = new();
-
+    
     private void Awake()
     {
         
@@ -21,14 +21,30 @@ public class Scoreboard : MonoBehaviour
     }
     
     public void Setup(Dictionary<Players, PlayerProfile> playerProfiles)
-    {
+    {   
+        var childs = GetComponentsInChildren<ScoreboardItem>();
+        scoreboardItems.Clear();
+
         playerProfiles = playerProfiles.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+
+        foreach (var child in childs)
+        {
+            if(playerProfiles.ContainsKey(child.Owner))
+            {
+                child.Setup(child.Owner, playerProfiles[child.Owner]);
+                scoreboardItems[child.Owner] = child;
+            }
+            else
+            {
+                child.gameObject.SetActive(false);
+            }
+        }
 
         foreach (var playerProfile in playerProfiles)
         {
-            var scoreboardItem = Instantiate(ScoreboardItemPrefab, transform).GetComponent<ScoreboardItem>();
-            scoreboardItem.Setup(playerProfile.Key, playerProfile.Value);
-            scoreboardItems.Add(playerProfile.Key, scoreboardItem);
+            //var scoreboardItem = Instantiate(ScoreboardItemPrefab, transform).GetComponent<ScoreboardItem>();
+            //scoreboardItem.Setup(playerProfile.Key, playerProfile.Value);
+            //scoreboardItems.Add(playerProfile.Key, scoreboardItem);
         }
     }
 

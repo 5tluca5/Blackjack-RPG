@@ -1013,6 +1013,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Stylized Dealer
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: c7a42a54101178f41aa9cf27413d1869, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 712720c1b0944fa47bb97efb9975543e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -9,6 +9,8 @@ public class ScoreboardItem : MonoBehaviour
 {
     [SerializeField] Players owner;
     [SerializeField] Image playerIcon;
+    [SerializeField] TMPro.TextMeshProUGUI playerNameText;
+    [SerializeField] TMPro.TextMeshProUGUI playerLevelText;
     [SerializeField] TMPro.TextMeshProUGUI totalChipText;
     [SerializeField] TMPro.TextMeshProUGUI handCardPointText;
 
@@ -20,7 +22,7 @@ public class ScoreboardItem : MonoBehaviour
     {
         playerProfile.OnPlayerChipUpdated().Subscribe(x =>
         {
-            DOVirtual.Int(curTotalChip, x, 0.5f, (x) => totalChipText.text = x.ToString()).SetEase(Ease.OutExpo);
+            DOVirtual.Int(curTotalChip, x, 1f, (x) => totalChipText.text = x.ToString()).SetEase(Ease.OutExpo);
         }).AddTo(this);
 
         this.owner = owner;
@@ -29,6 +31,8 @@ public class ScoreboardItem : MonoBehaviour
         handCardPoint = 0;
 
         playerIcon.sprite = playerProfile.PlayerIcon;
+        playerNameText.text = playerProfile.PlayerName;
+        playerLevelText.text = $" <size=18>Lv.</size>{playerProfile.PlayerLevel}";
 
         handCardPointText.text = handCardPoint.ToString();
 
@@ -42,4 +46,6 @@ public class ScoreboardItem : MonoBehaviour
         //this.point = point;
         //pointText.text = point.ToString();
     }
+
+    public Players Owner => owner;
 }

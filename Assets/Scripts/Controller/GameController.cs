@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour
     [SerializeField] BetPhaseManager betPhaseManager;
     [SerializeField] CameraRaycast cameraRaycast;
     [SerializeField] DealerObject dealer;
+    [SerializeField] ChipZone chipZone;
 
     [Header("Parameters")]
     [SerializeField] ReactiveProperty<GamePhase> currentPhase = new();
@@ -128,6 +129,8 @@ public class GameController : MonoBehaviour
         if (betPhaseManager.IsBettingPhaseActive()) return;
 
         EnableRaycast();
+        chipZone.SetPlayerChipValue(GetCurrentPlayerProfile().Chips);
+        chipZone.BetPhaseStarted();
 
         betPhaseManager.StartBettingPhase(playersZone.Values.Where(x => x.Owner != Players.Dealer).ToList());
     }
@@ -136,7 +139,7 @@ public class GameController : MonoBehaviour
     {
         if (deckController.IsShuffling() || !IsInitialDeal()) yield return null;
 
-        List<Players> order = new List<Players>() { Players.Player3, Players.Player2, Players.Player1, Players.Dealer};
+        List<Players> order = new List<Players>() { Players.Player3, Players.Player1, Players.Player2, Players.Dealer};
         
         for (int i = 0; i < 2; i++)
         {
@@ -179,14 +182,15 @@ public class GameController : MonoBehaviour
         var pp = GetCurrentPlayerProfile();
         var dp = playersZone[Players.Dealer].GetPlayerProfile();
         var betValue = playersZone[currentPlayer].GetBetValue();
-        
+        int winningValue = 0;
+
         if (winner == currentPlayer)
         {
-            betValue = playersZone[currentPlayer].IsBlackJack() ? (int)(betValue * 2.5f) : betValue * 2;
+            winningValue = playersZone[currentPlayer].IsBlackJack() ? (int)(betValue * 1.5f) : betValue;
 
             GameLogger.Instance.Log($"[{pp.LogPlayerName}] Won {betValue.LogWinningChips()}!");
-            pp.AddChips(betValue);
-            dp.AddChips(-betValue);
+            pp.AddChips(betValue + winningValue);
+            dp.AddChips(-winningValue);
         }
         else if (winner == Players.Dealer)
         {
@@ -221,6 +225,8 @@ public class GameController : MonoBehaviour
     public PlayerProfile GetCurrentPlayerProfile() => playersZone[currentPlayer].GetPlayerProfile();
     public ReactiveProperty<GamePhase> OnGamePhaseChanged() => currentPhase;
     public GamePhase GetCurrentPhase() => currentPhase.Value;
+    public ChipType GetSelectingChip() => chipZone.GetSelectingChipType();
+    public ChipZone GetChipZone() => chipZone;
     public bool IsBetPhase() => currentPhase.Value == GamePhase.PlayerBet;
 
     public bool IsPlayerTurn() => currentPhase.Value == GamePhase.PlayerTurn;
@@ -229,18 +235,40 @@ public class GameController : MonoBehaviour
     public bool IsDealerInteractable()
     {
         return (IsPlayerTurn() && playersZone[currentPlayer].IsBothCardRevealed())
-            || (IsBetPhase() && !playersZone[currentPlayer].IsBetPlaced() && playersZone[currentPlayer].GetBetValue() > 0);
+            || (IsBetPhase() && playersZone[currentPlayer].GetBetValue() > 0);
     }
     public void ReceivedInput(KeyCode keyCode)
     {
         GameObject go = cameraRaycast.GetRaycastedObject();
         
-        if (go != null && go.TryGetComponent(out Interactable interactable))
+        if (go != null && go.TryGetComponent(out Interactable interactable) && interactable.IsInteractable())
         {
             interactable.Interact(keyCode);
         }
     }
 
+    InteractableOutline lastInteractableOutline;
+    public void OnHovorGameObject(GameObject go)
+    {
+        if(go != null && go.TryGetComponent(out InteractableOutline interactableOutline))
+        {
+            if (lastInteractableOutline != null && lastInteractableOutline != interactableOutline)
+            {
+                lastInteractableOutline.SetOnHover(false);
+            }
+
+            interactableOutline.SetOnHover(true);
+            lastInteractableOutline = interactableOutline;
+        }
+        else
+        {
+            if (lastInteractableOutline != null)
+            {
+                lastInteractableOutline.SetOnHover(false);
+                lastInteractableOutline = null;
+            }
+        }
+    }
     public void DealCard(Players player)
     {
         if (!playersZone.ContainsKey(player)) return;
@@ -266,8 +294,8 @@ public class GameController : MonoBehaviour
 
     public void BetPhaseEnded()
     {
-        PlayerBetConfirmed();
         playersZone[currentPlayer].EndPlacingBet();
+        PlayerBetConfirmed();
 
         SetGamePhase(GamePhase.DealingCards);
     }
@@ -277,14 +305,20 @@ public class GameController : MonoBehaviour
         if (playersZone[currentPlayer].IsBetPlaced()) return;
 
         playersZone[currentPlayer].ConfirmBet();
+        chipZone.BetPhaseEnded();
+
         GameLogger.Instance.Log($"[{GetCurrentPlayerProfile().LogPlayerName}] placed bet: {playersZone[currentPlayer].GetBetValue().LogWinningChips()}.");
     }
 
-    public void PlayerAddChipToBetZone(ChipType chipType)
+    public void PlayerAddChipToBetZone()
     {
-        if(!playersZone[currentPlayer].AddChipToBetZone(chipType))
+        if(!playersZone[currentPlayer].AddChipToBetZone(GetSelectingChip()))
         {
             // Show log
+        }
+        else
+        {
+            dealer.SetInteractable(IsDealerInteractable());
         }
     }
 

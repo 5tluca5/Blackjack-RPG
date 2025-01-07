@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: DealerProfile
   m_EditorClassIdentifier: 
   owner: 0
-  playerName: Diu-er
+  playerName: "\u793E\u9577"
   playerIcon: {fileID: 21300000, guid: 75c34b7f42f56c24294e74ac21398ae3, type: 3}
-  playerLevel: 0
+  playerLevel: 1
   playerExp: 0
-  playerChips: 3000
+  playerTotalFunds: 10000
+  playerTableChips: -13035

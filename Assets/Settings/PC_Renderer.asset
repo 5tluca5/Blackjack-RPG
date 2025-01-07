@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f513a53c9ad43a3860c8a56ea7dd26b, type: 3}
   m_Name: SurfaceFill
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   settings: {fileID: 11400000, guid: a62fdbc6c54f2b14798cdf768ec79b25, type: 2}
   shaders:
     mask: {fileID: 4800000, guid: 7db39fa69b214149be63e199c01483e7, type: 3}
