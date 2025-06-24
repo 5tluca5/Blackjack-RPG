@@ -145,9 +145,11 @@ public class ChipZone : MonoBehaviour
     ReactiveProperty<int> curChipIndex = new(0);
 
     bool isBetPhase = false;
+    Vector3 initialPos;
 
     private void Start()
     {
+        initialPos = chipSelectTF.transform.localPosition;
         curChipIndex.Subscribe(x =>
         {
             if (x >= chipTypes.Count || x < 0) return;
@@ -199,8 +201,8 @@ public class ChipZone : MonoBehaviour
         isBetPhase = true;
         chipSelectTF.gameObject.SetActive(true);
 
-        var initialPos = transform.localPosition;
-        chipSelectTF.DOLocalMoveY(initialPos.y - 200f, 0.5f).From().SetEase(Ease.OutBack);
+        chipSelectTF.transform.localPosition = initialPos;
+        chipSelectTF.DOLocalMoveY(initialPos.y - 200, 0.5f).From().SetEase(Ease.OutBack);
 
     }
 

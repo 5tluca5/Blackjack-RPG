@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using CardAttribute;
 using System.Linq;
 using UnityEngine.Rendering.Universal;
+using System;
 
 public class GameController : MonoBehaviour
 {
@@ -42,7 +43,7 @@ public class GameController : MonoBehaviour
         else
         {
             Destroy(gameObject);
-        }   
+        }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -90,7 +91,7 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(raycastCooldown > 0)
+        if (raycastCooldown > 0)
         {
             raycastCooldown = Mathf.Max(0, raycastCooldown - Time.deltaTime);
 
@@ -120,7 +121,7 @@ public class GameController : MonoBehaviour
         //    Debug.Log("InitialDealCard completed");
         //    currentPhase.Value = GamePhase.PlayerTurn;
         //}).AddTo(this);
-        
+
         yield return null;
     }
 
@@ -139,11 +140,11 @@ public class GameController : MonoBehaviour
     {
         if (deckController.IsShuffling() || !IsInitialDeal()) yield return null;
 
-        List<Players> order = new List<Players>() { Players.Player3, Players.Player1, Players.Player2, Players.Dealer};
-        
+        List<Players> order = new List<Players>() { Players.Player3, Players.Player1, Players.Player2, Players.Dealer };
+
         for (int i = 0; i < 2; i++)
         {
-            foreach(var p in order)
+            foreach (var p in order)
             {
                 if (playersZone.ContainsKey(p))
                 {
@@ -206,6 +207,7 @@ public class GameController : MonoBehaviour
         yield return new WaitForSeconds(2 * (1 / GameSpeed));
 
         EnableRaycast();
+        //SetGamePhase(GamePhase.NextRound);
     }
 
     IEnumerator PhaseNextRound()
@@ -235,7 +237,8 @@ public class GameController : MonoBehaviour
     public bool IsDealerInteractable()
     {
         return (IsPlayerTurn() && playersZone[currentPlayer].IsBothCardRevealed())
-            || (IsBetPhase() && playersZone[currentPlayer].GetBetValue() > 0);
+            || (IsBetPhase() && playersZone[currentPlayer].GetBetValue() > 0)
+            || IsSettlementPhase();
     }
     public void ReceivedInput(KeyCode keyCode)
     {
@@ -370,7 +373,20 @@ public class GameController : MonoBehaviour
         {
             cardset.SubscribeRevealedCardPoint().Subscribe(x =>
             {
-                hudController.UpdateScoreboardPoint(cardset.GetOwner(), x);
+                var owner = cardset.GetOwner();
+                var player = playersZone[owner];
+
+                hudController.UpdateScoreboardPoint(owner, x);
+
+                if (player.IsBusted())
+                {
+                    SetGamePhase(GamePhase.SettlementPhase);
+                }
+                else if (player.IsBothCardRevealed())
+                {
+                    dealer.SetInteractable(IsDealerInteractable());
+                }
+
             }).AddTo(cardset);
         }
     }

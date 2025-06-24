@@ -37,6 +37,7 @@ public class BetPhaseManager : MonoBehaviour//NetworkBehaviour
             player.StartPlacingBet();
         }
 
+        hudController.UpdateBetTimer(timer);
         hudController.ShowBetTimer(bettingTime);
 
         StartCoroutine(BettingTimer());

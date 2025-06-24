@@ -10,9 +10,12 @@ public class BetTimer : MonoBehaviour
     [SerializeField] TextMeshProUGUI timeText;
 
     float initialTime;
+    Vector3 initialPos;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        initialPos = timerTF.localPosition;
         timerTF.gameObject.SetActive(false);
     }
 
@@ -26,8 +29,8 @@ public class BetTimer : MonoBehaviour
     {
         this.initialTime = initialTime;
 
+        timerTF.transform.localPosition = initialPos;
         timerTF.gameObject.SetActive(true); 
-        var initialPos = timerTF.localPosition;
         timerTF.DOLocalMoveY(initialPos.y + 200f, duration).From().SetEase(Ease.OutBack);
     }
 

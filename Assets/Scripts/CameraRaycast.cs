@@ -1,4 +1,3 @@
-using UnityEditor.Localization.Plugins.XLIFF.V12;
 using UnityEngine;
 
 public class CameraRaycast : MonoBehaviour
@@ -34,7 +33,7 @@ public class CameraRaycast : MonoBehaviour
         // Perform the raycast only on the specified layer
         if (Physics.Raycast(ray, out RaycastHit hitInfo, raycastRange, priorityLayer))
         {
-            Debug.Log($"Hit: {hitInfo.collider.name} on priority layer");
+            //Debug.Log($"Hit: {hitInfo.collider.name} on priority layer");
 
             aimTarget = hitInfo.collider.gameObject;
 
@@ -44,7 +43,7 @@ public class CameraRaycast : MonoBehaviour
         else if (raycastEnabled && Physics.Raycast(ray, out hitInfo, raycastRange))
         {
             // Log the object that was hit
-            Debug.Log("Hit object: " + hitInfo.collider.name);
+            //Debug.Log("Hit object: " + hitInfo.collider.name);
 
             aimTarget = hitInfo.collider.gameObject;
 

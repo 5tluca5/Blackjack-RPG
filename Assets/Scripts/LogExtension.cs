@@ -13,6 +13,6 @@ public static class LogExtension
     }
     public static string LogLossingChips(this int chips)
     {
-        return $"<color=##ed5156>{chips}</color>";
+        return $"<color=#ed5156>{chips}</color>";
     }
 }

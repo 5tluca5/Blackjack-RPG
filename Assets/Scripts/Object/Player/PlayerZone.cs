@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UniRx;
 using System.Linq;
+using Unity.Multiplayer.Playmode;
 
 public class PlayerZone : MonoBehaviour
 {
@@ -80,6 +81,8 @@ public class PlayerZone : MonoBehaviour
         if(betValue < RuleController.Instance.MinBet)
         {
             betValue = betZone.SetToMinBet();
+            GameLogger.Instance.Log($"[{playerProfile.LogPlayerName}] Bet value is less than minimum bet. Setting to minimum bet ({RuleController.Instance.MinBet}).");
+
         }
 
         playerProfile.AddChips(-betValue);
@@ -89,6 +92,7 @@ public class PlayerZone : MonoBehaviour
     {
         betPlaced = false;
         cardZone.ResetCardZone();
+        betZone.ResetBetZone();
         playerProfile.Refresh();
     }
 

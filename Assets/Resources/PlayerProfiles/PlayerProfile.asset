@@ -18,4 +18,4 @@ MonoBehaviour:
   playerLevel: 1
   playerExp: 0
   playerTotalFunds: 10000
-  playerTableChips: 3000
+  playerTableChips: 9999
