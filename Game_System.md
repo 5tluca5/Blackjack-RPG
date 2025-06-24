@@ -23,3 +23,5 @@
 - 🐾 **寵物**：陪伴玩家、提供小型加成（如 MP 回復、幸運增益）  
 
 > 🎁 隨機寶箱或成就達成也可能解鎖稀有收藏品！
+
+https://docs.google.com/document/d/19JYwl6Ddk11WGKcTD384OmamiyRTIHoMMkrNIDs0GHo/edit?usp=sharing
