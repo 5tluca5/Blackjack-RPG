@@ -65,7 +65,7 @@ public class CardSet : MonoBehaviour
             float value = (i - halfSize) * scale;
             cards[i].transform.parent.DORotate(new Vector3(0, 0, 0), 0f);
             //cards[i].transform.localPosition = new Vector3(value, i / 100, 0);
-            cards[i].transform.parent.transform.DOLocalMove(new Vector3(value, i/100f, 0), 0.5f * (1 / GameController.Instance.GameSpeed)).SetEase(Ease.OutExpo);
+            cards[i].transform.parent.transform.DOLocalMove(new Vector3(value, 0, 0), 0.5f * (1 / GameController.Instance.GameSpeed)).SetEase(Ease.OutExpo);
             //yield return new WaitForSeconds(0.1f * (1 / GameController.Instance.GameSpeed));
         }
 

@@ -20,7 +20,7 @@ public class BetZone : MonoBehaviour, Interactable
 
     private void Start()
     {
-            
+
     }
 
     //public void AddChip(ChipType chipType = ChipType.Chip_5)
@@ -57,7 +57,7 @@ public class BetZone : MonoBehaviour, Interactable
 
     public void AddChip(ChipType chipType = ChipType.Chip_5)
     {
-        
+
         var chip = Instantiate(chipPrefab, spawnPoint);
         var spawnPosition = Vector3.zero;
         spawnPosition.y = chipObjects.Count * 0.05f;
@@ -86,8 +86,9 @@ public class BetZone : MonoBehaviour, Interactable
     {
         var minBet = RuleController.Instance.MinBet;
         var chipTypes = GameController.Instance.GetChipZone().GetChipTypes().OrderByDescending(x => x).ToList();
-        
-        foreach (var chip in chipObjects) {
+
+        foreach (var chip in chipObjects)
+        {
             Destroy(chip.gameObject);
         }
 
@@ -121,7 +122,7 @@ public class BetZone : MonoBehaviour, Interactable
 
     void SetChipsInteractable()
     {
-       for(int i=0; i<chipObjects.Count; i++)
+        for (int i = 0; i < chipObjects.Count; i++)
         {
             chipObjects[i].SetInteractable(i == chipObjects.Count - 1);
         }
@@ -134,9 +135,20 @@ public class BetZone : MonoBehaviour, Interactable
 
     public void Interact(KeyCode keyCode)
     {
-        if(keyCode == KeyCode.Mouse0)
+        if (keyCode == KeyCode.Mouse0)
         {
             GameController.Instance.PlayerAddChipToBetZone();
         }
+    }
+
+    public void ResetBetZone()
+    {
+        foreach (var chip in chipObjects)
+        {
+            Destroy(chip.gameObject);
+        }
+
+        chipObjects.Clear();
+        CalculateBetValue();
     }
 }

@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(DeckController))]
 public class DeckEditor : Editor
 {
@@ -52,3 +53,4 @@ public class DeckEditor : Editor
         }
     }
 }
+#endif

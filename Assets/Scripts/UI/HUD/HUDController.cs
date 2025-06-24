@@ -18,6 +18,7 @@ public class HUDController : MonoBehaviour
     [SerializeField] PromptGroup promptPlayerCard;
     [SerializeField] PromptGroup promptPlayerBetAction;
     [SerializeField] PromptGroup promptPlayerRegularAction;
+    [SerializeField] PromptGroup promptPlayerNextRoundAction;
 
     [Header("Scoreboard")]
     [SerializeField] Scoreboard scoreboard;
@@ -61,10 +62,12 @@ public class HUDController : MonoBehaviour
             }
             else if(go.CompareTag("Dealer") && isInteractable)
             {
-                if(GameController.Instance.IsBetPhase())
+                if (GameController.Instance.IsBetPhase())
                     promptPlayerBetAction.Show();
-                else if(GameController.Instance.IsPlayerTurn())
+                else if (GameController.Instance.IsPlayerTurn())
                     promptPlayerRegularAction.Show();
+                else if (GameController.Instance.IsSettlementPhase())
+                    promptPlayerNextRoundAction.Show();
             }
 
             SwitchAimColor(isInteractable);
