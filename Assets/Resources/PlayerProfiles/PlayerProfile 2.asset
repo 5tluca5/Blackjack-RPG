@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerProfile 2
   m_EditorClassIdentifier: 
   owner: 3
-  playerName: NPC 2
+  playerName: Keroro
   playerIcon: {fileID: 21300000, guid: 50f37c86e708c514ea5ad82f202877b9, type: 3}
   playerLevel: 1
   playerExp: 0
